@@ -265,7 +265,7 @@ MACRO(create_project mode defines includes links)
 		
 		# Mac
 		if(MACOS)
-			set(CMAKE_MACOSX_RPATH 1)
+			set(CMAKE_MACOSX_RPATH OFF )
 		endif()
 		
 		#----- CREATE TARGET -----
