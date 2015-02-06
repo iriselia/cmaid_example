@@ -263,6 +263,11 @@ MACRO(create_project mode defines includes links)
 			set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE CXX)
 		endif()
 		
+		# Mac
+		if(MACOS)
+			set(CMAKE_MACOSX_RPATH 1)
+		endif()
+		
 		#----- CREATE TARGET -----
 		set(projectExtension "")
 		if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
@@ -323,12 +328,11 @@ MACRO(create_project mode defines includes links)
 		
 		#------ need linker language flag for header only static libraries -----
 		if(MACOS)
-			set(CMAKE_MACOSX_RPATH 0)
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES MACOSX_RPATH ON)
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SKIP_BUILD_RPATH OFF)
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH OFF)
-			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/")
+			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@loader_path/../lib")
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_NAME_DIR "")
 		endif()
 		#----- Custom PreBuild Target ------
