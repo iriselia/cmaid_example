@@ -266,6 +266,7 @@ MACRO(create_project mode defines includes links)
 		# Mac
 		if(MACOS)
 			set(CMAKE_MACOSX_RPATH OFF )
+			cmake_policy(SET CMP0042 NEW)
 		endif()
 		
 		#----- CREATE TARGET -----
