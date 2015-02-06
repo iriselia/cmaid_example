@@ -36,7 +36,6 @@ MACRO( CreateVSProjectSettings )
 
 	#TODO: REMOVE
 	if(XCODE)
-	set(CMAKE_MACOSX_RPATH 0)
 	set(CMAKE_OSX_ARCHITECTURES "")
 	endif()
 ENDMACRO()
