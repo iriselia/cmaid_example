@@ -322,8 +322,10 @@ MACRO(create_project mode defines includes links)
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 		
 		#------ need linker language flag for header only static libraries -----
-		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/")
-
+		if(MACOS)
+			SET(INSTALL_RPATH_USE_LINK_PATH ON)
+			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/")
+		endif()
 		#----- Custom PreBuild Target ------
 		# Copy Binaries from Backup folder to Binaries folder
 
