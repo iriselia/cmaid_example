@@ -249,8 +249,11 @@ MACRO(create_project mode defines includes links)
 				/Fp\"${precompiledOutputBinary}\""
 											   OBJECT_DEPENDS "${precompiledOutputBinary}")
 			
+			if(NOT MY_CPP_SRC)
+				set(COMPILER_LANGUAGE "/TC")
+			endif()
 			SET_SOURCE_FILES_PROPERTIES(${generatedSource}
-				PROPERTIES COMPILE_FLAGS "/Yc\"${generatedHeaderName}\" /Fp\"${generatedBinary}\""
+				PROPERTIES COMPILE_FLAGS "${COMPILER_LANGUAGE}" "/Yc\"${generatedHeaderName}\" /Fp\"${generatedBinary}\""
 				OBJECT_OUTPUTS "${generatedBinary}")
 		endif()
 		##else( NOT ${PRECOMPILED_HEADER} STREQUAL "")
