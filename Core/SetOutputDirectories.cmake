@@ -10,11 +10,11 @@ SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/Binaries/Libraries
 SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}/Binaries/Libraries/MinSizeRel CACHE PATH "Single Directory for all static libraries." )
 SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_SOURCE_DIR}/Binaries/Libraries/RelWithDebInfo CACHE PATH "Single Directory for all static libraries." )
 
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binaries/Libraries CACHE PATH "Single Directory for all static libraries.")
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/Binaries/Libraries/Release CACHE PATH "Single Directory for all static libraries.")
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/Binaries/Libraries/Debug CACHE PATH "Single Directory for all static libraries.")
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}/Binaries/Libraries/MinSizeRel CACHE PATH "Single Directory for all static libraries.")
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_SOURCE_DIR}/Binaries/Libraries/RelWithDebInfo CACHE PATH "Single Directory for all static libraries.")
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binaries/Backup CACHE PATH "Single Directory for all static libraries.")
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/Binaries/Backup CACHE PATH "Single Directory for all static libraries.")
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/Binaries/Backup CACHE PATH "Single Directory for all static libraries.")
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_SOURCE_DIR}/Binaries/Backup CACHE PATH "Single Directory for all static libraries.")
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_SOURCE_DIR}/Binaries/Backup CACHE PATH "Single Directory for all static libraries.")
 
 SET( CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binaries/Libraries CACHE PATH "Single Directory for all static libraries." )
 SET( CMAKE_DEBUG_POSTFIX "-debug" )

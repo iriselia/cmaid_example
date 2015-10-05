@@ -271,12 +271,7 @@ MACRO(create_project mode defines includes links)
 		if(MY_CPP_SRC)
 			set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE CXX)
 		endif()
-		
-		# Mac
-		if(MACOS)
-			set(CMAKE_MACOSX_RPATH ON )
-		endif()
-		
+				
 		#----- CREATE TARGET -----
 		set(projectExtension "")
 		if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
@@ -336,13 +331,37 @@ MACRO(create_project mode defines includes links)
 		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 		
 		#------ need linker language flag for header only static libraries -----
-		if(MACOS)
+		if(APPLE)
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES MACOSX_RPATH ON)
-			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
-			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SKIP_BUILD_RPATH OFF)
-			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH 1 INSTALL_NAME_DIR "@rpath")
-			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@loader_path/../lib")
+			
+#TODO: CLEAN UP.
+
+# use, i.e. don't skip the full RPATH for the build tree
+#SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+#			MESSAGE("A ${CMAKE_SKIP_BUILD_RPATH}")
+
+
+
+# don't add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+#			MESSAGE("D ${CMAKE_INSTALL_RPATH_USE_LINK_PATH}")
+#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+# when building, don't use the install RPATH already
+# (but later on when installing)
+#SET(CMAKE_BUILD_WITH_INSTALL_RPATH true) 
+#			MESSAGE("B ${CMAKE_BUILD_WITH_INSTALL_RPATH}")
+# the RPATH to be used when installing
+#SET(CMAKE_INSTALL_RPATH "@loader_path")
+#			MESSAGE("C ${CMAKE_INSTALL_RPATH}")
+
+			#UNNECESSARY. ONLY AFFECTS DLL, AND @RPATH IS THE DEFAULT INSTALL PATH.
+			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES BUILD_WITH_INSTALL_RPATH ON INSTALL_NAME_DIR "@rpath")
+			
+			#SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+			#SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SKIP_BUILD_RPATH OFF)
+			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@loader_path") #"@loader_path/../lib")
 		endif()
+
 		#----- Custom PreBuild Target ------
 		# Copy Binaries from Backup folder to Binaries folder
 
