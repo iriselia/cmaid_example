@@ -102,15 +102,22 @@ MACRO(create_project mode defines includes links)
 	
 	file(GLOB_RECURSE MY_CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
-	file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.inl ${CMAKE_CURRENT_SOURCE_DIR}/*.resx ${CMAKE_CURRENT_SOURCE_DIR}/*.pipl)
+	file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.inl)
 	set( ${PROJECT_NAME}_HEADERS "${${PROJECT_NAME}_HEADERS}" CACHE STRING "" )
 	if( NOT ${PROJECT_NAME}_HEADERS STREQUAL "" )
 		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_HEADERS})
 	endif()
 
-	file(GLOB_RECURSE MY_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.rc)
+	file(GLOB_RECURSE MY_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.rc ${CMAKE_CURRENT_SOURCE_DIR}/*.r ${CMAKE_CURRENT_SOURCE_DIR}/*.resx)
 	if( NOT MY_RESOURCES STREQUAL "" )
-		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${MY_RESOURCES})
+		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}" ${MY_RESOURCES})
+		foreach(MY_RESOURCE ${MY_RESOURCES})
+			FILE(RELATIVE_PATH folder ${CMAKE_CURRENT_SOURCE_DIR} ${MY_RESOURCE})
+			string(FIND ${folder} "/" result)
+			if(${result} STREQUAL "-1")
+				SOURCE_GROUP("Resource Files" FILES ${MY_RESOURCES})
+			endif()
+		endforeach()
 	endif()
 
 	file(GLOB_RECURSE MY_MISC ${CMAKE_CURRENT_SOURCE_DIR}/*.l ${CMAKE_CURRENT_SOURCE_DIR}/*.y)
@@ -306,12 +313,34 @@ MACRO(create_project mode defines includes links)
 			endif()
 		endif()
 		
+		
+
 		get_target_property(FLAGS ${PROJECT_NAME} COMPILE_FLAGS)
 		if(FLAGS STREQUAL "FLAGS-NOTFOUND")
 			set(FLAGS "")
 		endif()
 		set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${FLAGS} ${outCompileFlags}")
-		
+
+		if( MSVC )
+			if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
+				set(CompilerFlags
+					CMAKE_CXX_FLAGS
+					CMAKE_CXX_FLAGS_DEBUG
+					CMAKE_CXX_FLAGS_MINSIZEREL
+					CMAKE_CXX_FLAGS_RELEASE
+					CMAKE_CXX_FLAGS_RELWITHDEBINFO
+					CMAKE_C_FLAGS
+					CMAKE_C_FLAGS_DEBUG
+					CMAKE_C_FLAGS_MINSIZEREL
+					CMAKE_C_FLAGS_DEBUG
+					CMAKE_C_FLAGS_RELWITHDEBINFO
+				)
+				foreach(CompilerFlag ${CompilerFlags})
+					string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+				endforeach()
+			endif()
+		endif()
+
 		#------ set target filter -----
 		if( MSVC )
 			# TODO: OPTIMIZE THIS
