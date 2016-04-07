@@ -11,6 +11,9 @@ if Git == "" ( goto Error_MissingGitHub )
 "%Git%" commit -m "Minor Update"
 "%Git%" push
 
+pause
+Exit
+
 :Error_MissingGitHub
 echo.
 echo GenerateProjectFiles ERROR: It looks like you have not installed GitHub. It is required for Purify to work.
