@@ -44,7 +44,7 @@ MACRO(create_build global_define )
 		unset(${PROJECT_NAME}_SOURCE_DIR_CACHED CACHE)
 		set(${PROJECT_NAME}_SOURCE_DIR_CACHED "${fileDir}" CACHE STRING "")
 		#----- All Headers -----
-		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.h ${fileDir}/*.hpp ${fileDir}/*.inl)
+		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.h ${fileDir}/*.hpp ${fileDir}/*.inl ${fileDir}/*.rc ${fileDir}/*.r ${fileDir}/*.resx)
 		if( NOT MY_HEADERS STREQUAL "" )
 			create_source_group("" "${fileDir}/" ${MY_HEADERS})
 			#remove duplicates and parse directories

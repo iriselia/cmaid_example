@@ -27,7 +27,7 @@ MACRO(force_include_protected compileFlags includeProjs outString)
 ENDMACRO()
 
 MACRO(force_include_public_recursive compileFlags includeProj outString)
-	include_directories(${${includeProj}_SOURCE_DIR_CACHED})
+	list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${${includeProj}_SOURCE_DIR_CACHED})
 	
 	string(CONCAT ${outString} ${${outString}} "/* ${includeProj}: */ ")
 	if(NOT ${${includeProj}_PUBLIC_INCLUDE_FILES} STREQUAL "")
@@ -159,7 +159,7 @@ MACRO(create_project mode defines includes links)
 		#------ INCLUDE DIRS AND LIBS -----
 		CreateVSProjectSettings() # From ProjectSettingsTemplate.cmake
 		# Must include self
-		include_directories( ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
+		#include_directories( ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
 		# Process include list, an element could be a list of dirs or a target name
 		set(includeDirs "")
 		set(includeProjs "")
@@ -182,7 +182,7 @@ MACRO(create_project mode defines includes links)
 			endif()
 		ENDFOREACH(currentName ${includes})
 		set(${PROJECT_NAME}_INCLUDES "${includeProjs}" CACHE STRING "")
-		include_directories(${includeDirs})
+		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${includeDirs})
 		# Add links
 		link_libraries(${links})
 		
@@ -313,8 +313,12 @@ MACRO(create_project mode defines includes links)
 			endif()
 		endif()
 		
-		
+		#----- Handle includes -----
+		message("${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
+		list(REMOVE_DUPLICATES ${PROJECT_NAME}_ALL_INCLUDE_DIRS)
+		target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
 
+		#----- compile flags -----
 		get_target_property(FLAGS ${PROJECT_NAME} COMPILE_FLAGS)
 		if(FLAGS STREQUAL "FLAGS-NOTFOUND")
 			set(FLAGS "")
