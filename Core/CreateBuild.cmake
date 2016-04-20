@@ -2,6 +2,11 @@ cmake_minimum_required( VERSION 2.8 )
 
 
 MACRO(create_build global_define )
+	unset(PROJECT_NAMES CACHE)
+	set(PROJECT_NAMES "" CACHE STRING "")
+	unset(FIRST_BUILD CACHE)
+	set(FIRST_BUILD ON CACHE STRING "")
+
 	FOREACH(currDefine ${GLOBAL_DEFINE})
 		string(SUBSTRING ${currDefine} 0 1 firstLetter)
 		if(firstLetter STREQUAL "/")
@@ -146,25 +151,25 @@ MACRO(create_build global_define )
 
 	SET(PROJECT_COUNT 0)
 
+	FOREACH(curFile ${allProjects})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} PROJECT_NAME)
+		set(new_project_names "${PROJECT_NAMES};${PROJECT_NAME}")
+		unset(PROJECT_NAMES CACHE)
+		set(PROJECT_NAMES "${new_project_names}" CACHE STRING "")
+	ENDFOREACH()
+
 	#Include sub directories now
 	FOREACH(curFile ${allProjects})
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 		get_folder_name(${fileDir} PROJECT_NAME)
-		
-		# unset all project-specific cache
-		#message("unset ${fileDir} ${PROJECT_NAME}_SRC")
-		#unset(${PROJECT_NAME}_SRC CACHE)
-		#unset(${PROJECT_NAME}_INCLUDE_PROJECTS CACHE)
-		#unset(${PROJECT_NAME}_SRC CACHE)
-		#unset(${PROJECT_NAME}_SRC CACHE)
-		if(NOT ${PROJECT_NAME}_INITIALIZED)
-			set(FirstBuild ON )
-		else()
-			set(FirstBuild OFF )
-		endif()
+
+		#create_project: CreateProject.cmake on fileDir
 		add_subdirectory( ${fileDir} )
 		
-		if(NOT FirstBuild)
+		if(${PROJECT_NAME}_INITIALIZED)
+			set(SecondBuild true)
+
 			MATH(EXPR PROJECT_COUNT "${PROJECT_COUNT}+1")
 			FILE(RELATIVE_PATH folder ${CMAKE_SOURCE_DIR} ${fileDir})
 			set(newFolder folder)
@@ -187,8 +192,17 @@ MACRO(create_build global_define )
 			set( PreviousFolder ${newFolder} )
 		endif()
 	ENDFOREACH(curFile ${allProjects})
-	
-	if(FirstBuild)
+
+	FOREACH(curFile ${allProjects})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} PROJECT_NAME)
+
+		#post_create process, note that this is completely different from creating a new project.
+		#everything should have been created here, except we need to link the libraries.
+		#add_subdirectory( ${fileDir} )
+	ENDFOREACH(curFile ${allProjects})
+
+	if(NOT SecondBuild)
 		message("Purify only initializes cache on the first build. Configure and generate again to complete the generation process.")
 	endif()
 ENDMACRO()

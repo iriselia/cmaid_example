@@ -66,6 +66,28 @@ MACRO(force_include_recursive compileFlags includeProjs outString)
 	force_include_public(${compileFlags} "${includeProjs}" ${outString})
 ENDMACRO()
 
+MACRO(search_and_link_libraries libs)
+	foreach(proj ${PROJECT_NAMES})
+		#message("name: ${proj}")
+	endforeach()
+	foreach(lib ${libs})
+		list(FIND PROJECT_NAMES ${lib} index)
+		if(NOT index EQUAL -1)
+			#message("found target: ${lib} ${index}")
+			list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${lib})
+			target_link_libraries(${PROJECT_NAME} ${lib})
+		else()
+			#message("couldn't find target: ${lib}")
+			file(GLOB_RECURSE lib_dir "${CMAKE_SOURCE_DIR}/*${lib}")
+			if(EXISTS ${lib_dir})
+				target_link_libraries(${PROJECT_NAME} ${lib_dir})
+			else()
+				target_link_libraries(${PROJECT_NAME} ${lib})
+				message("library not found: ${lib}")
+			endif()
+		endif()
+	endforeach()
+ENDMACRO()
 #
 #
 #
@@ -78,76 +100,81 @@ MACRO(create_project mode defines includes links)
 		project( ${PROJECT_NAME} )
 		set(${PROJECT_NAME}_INITIALIZED ON CACHE BOOL "")
 		set(should_build ON)
-	endif()
-	
-	#----- Unset Cached Arguments -----
-	unset(${PROJECT_NAME}_INCLUDES CACHE)
-	unset(${PROJECT_NAME}_MODE CACHE)
-	set(${PROJECT_NAME}_MODE "${mode}" CACHE STRING "")
-	set(${PROJECT_NAME}_INCLUDES "${includes}" CACHE STRING "")
-	
-	#----- SCAN SOURCE -----
-	
-	if( NOT ${PROJECT_NAME}_SRC AND NOT ${PROJECT_NAME}_HEADERS)
-		set(should_build OFF)
 	else()
-		unset(${PROJECT_NAME}_SRC)
+		set(should_build OFF)
 	endif()
 	
-	file(GLOB_RECURSE ${PROJECT_NAME}_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
-	set( ${PROJECT_NAME}_SRC "${${PROJECT_NAME}_SRC}" CACHE STRING "" )
-	if( NOT ${PROJECT_NAME}_SRC STREQUAL "" )
-		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_SRC})
-	endif()
-	
-	file(GLOB_RECURSE MY_CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+	if(NOT should_build)
+		#----- Unset Cached Arguments -----
+		unset(${PROJECT_NAME}_INCLUDES CACHE)
+		unset(${PROJECT_NAME}_MODE CACHE)
+		set(${PROJECT_NAME}_MODE "${mode}" CACHE STRING "")
+		set(${PROJECT_NAME}_INCLUDES "${includes}" CACHE STRING "")
+		
+		#----- SCAN SOURCE -----
+		
+		if( NOT ${PROJECT_NAME}_SRC AND NOT ${PROJECT_NAME}_HEADERS)
+			set(should_build OFF)
+		else()
+			unset(${PROJECT_NAME}_SRC)
+		endif()
+		
+		file(GLOB_RECURSE ${PROJECT_NAME}_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+		set( ${PROJECT_NAME}_SRC "${${PROJECT_NAME}_SRC}" CACHE STRING "" )
+		if( NOT ${PROJECT_NAME}_SRC STREQUAL "" )
+			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_SRC})
+		endif()
+		
+		file(GLOB_RECURSE MY_CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
-	file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.inl)
-	set( ${PROJECT_NAME}_HEADERS "${${PROJECT_NAME}_HEADERS}" CACHE STRING "" )
-	if( NOT ${PROJECT_NAME}_HEADERS STREQUAL "" )
-		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_HEADERS})
+		file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.inl)
+		set( ${PROJECT_NAME}_HEADERS "${${PROJECT_NAME}_HEADERS}" CACHE STRING "" )
+		if( NOT ${PROJECT_NAME}_HEADERS STREQUAL "" )
+			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_HEADERS})
+		endif()
+
+		file(GLOB_RECURSE MY_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.rc ${CMAKE_CURRENT_SOURCE_DIR}/*.r ${CMAKE_CURRENT_SOURCE_DIR}/*.resx)
+		if( NOT MY_RESOURCES STREQUAL "" )
+			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}" ${MY_RESOURCES})
+			foreach(MY_RESOURCE ${MY_RESOURCES})
+				FILE(RELATIVE_PATH folder ${CMAKE_CURRENT_SOURCE_DIR} ${MY_RESOURCE})
+				string(FIND ${folder} "/" result)
+				if(${result} STREQUAL "-1")
+					SOURCE_GROUP("Resource Files" FILES ${MY_RESOURCES})
+				endif()
+			endforeach()
+		endif()
+
+		file(GLOB_RECURSE MY_MISC ${CMAKE_CURRENT_SOURCE_DIR}/*.l ${CMAKE_CURRENT_SOURCE_DIR}/*.y)
+		if( NOT MY_MISC STREQUAL "" )
+			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${MY_MISC})
+		endif()
+
+		if( (${PROJECT_NAME}_SRC STREQUAL "") AND (${PROJECT_NAME}_HEADERS STREQUAL "") )
+			message(STATUS "Project is empty, a stub C header was created to set compiler language.")
+			file(WRITE Stub.h "")
+			LIST(APPEND ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Stub.h)
+			#message(FATAL_ERROR "Please insert at least one source file to use the CMakeLists.txt.")
+		endif()
+
+		#----- Scan Shader Files -----
+		file(GLOB_RECURSE MY_SHADERS
+			${CMAKE_CURRENT_SOURCE_DIR}/*.vert
+			${CMAKE_CURRENT_SOURCE_DIR}/*.frag
+			${CMAKE_CURRENT_SOURCE_DIR}/*.geom
+			${CMAKE_CURRENT_SOURCE_DIR}/*.ctrl
+			${CMAKE_CURRENT_SOURCE_DIR}/*.eval
+			${CMAKE_CURRENT_SOURCE_DIR}/*.glsl)
+		if( NOT MY_SHADERS STREQUAL "" )
+			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${MY_SHADERS})
+		endif()
+		#----- Scan Precompiled Headers -----
+		file(GLOB_RECURSE PRECOMPILED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/*.pch.h)
 	endif()
 
-	file(GLOB_RECURSE MY_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.rc ${CMAKE_CURRENT_SOURCE_DIR}/*.r ${CMAKE_CURRENT_SOURCE_DIR}/*.resx)
-	if( NOT MY_RESOURCES STREQUAL "" )
-		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}" ${MY_RESOURCES})
-		foreach(MY_RESOURCE ${MY_RESOURCES})
-			FILE(RELATIVE_PATH folder ${CMAKE_CURRENT_SOURCE_DIR} ${MY_RESOURCE})
-			string(FIND ${folder} "/" result)
-			if(${result} STREQUAL "-1")
-				SOURCE_GROUP("Resource Files" FILES ${MY_RESOURCES})
-			endif()
-		endforeach()
-	endif()
-
-	file(GLOB_RECURSE MY_MISC ${CMAKE_CURRENT_SOURCE_DIR}/*.l ${CMAKE_CURRENT_SOURCE_DIR}/*.y)
-	if( NOT MY_MISC STREQUAL "" )
-		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${MY_MISC})
-	endif()
-
-	if( (${PROJECT_NAME}_SRC STREQUAL "") AND (${PROJECT_NAME}_HEADERS STREQUAL "") )
-		message(STATUS "Project is empty, a stub C header was created to set compiler language.")
-		file(WRITE Stub.h "")
-		LIST(APPEND ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Stub.h)
-		#message(FATAL_ERROR "Please insert at least one source file to use the CMakeLists.txt.")
-	endif()
-
-	#----- Scan Shader Files -----
-	file(GLOB_RECURSE MY_SHADERS
-		${CMAKE_CURRENT_SOURCE_DIR}/*.vert
-		${CMAKE_CURRENT_SOURCE_DIR}/*.frag
-		${CMAKE_CURRENT_SOURCE_DIR}/*.geom
-		${CMAKE_CURRENT_SOURCE_DIR}/*.ctrl
-		${CMAKE_CURRENT_SOURCE_DIR}/*.eval
-		${CMAKE_CURRENT_SOURCE_DIR}/*.glsl)
-	if( NOT MY_SHADERS STREQUAL "" )
-		create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${MY_SHADERS})
-	endif()
-	#----- Scan Precompiled Headers -----
-	file(GLOB_RECURSE PRECOMPILED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/*.pch.h)
-
-	#----- The follow code will only be executed if build project is being run the second time -----
+	#----- The follow code will only be executed if build project is being run a second time -----
 	if( should_build )
+		#message("Building: ${PROJECT_NAME}")
 		#----- Add Preprocessor Definitions -----
 		foreach(currMacro ${defines})
 			add_definitions("-D${currMacro}")
@@ -184,7 +211,6 @@ MACRO(create_project mode defines includes links)
 		set(${PROJECT_NAME}_INCLUDES "${includeProjs}" CACHE STRING "")
 		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${includeDirs})
 		# Add links
-		link_libraries(${links})
 		
 		#----- Mark PRECOMPILED HEADER -----
 		if( NOT ${PRECOMPILED_HEADER} STREQUAL "")
@@ -278,6 +304,8 @@ MACRO(create_project mode defines includes links)
 		# Force C++ if there's any cpp file
 		if(MY_CPP_SRC)
 			set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE CXX)
+		else()
+			set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE C)
 		endif()
 				
 		#----- CREATE TARGET -----
@@ -317,6 +345,11 @@ MACRO(create_project mode defines includes links)
 		#message("${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
 		list(REMOVE_DUPLICATES ${PROJECT_NAME}_ALL_INCLUDE_DIRS)
 		target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
+
+		#----- Handle Links -----
+		#set(${PROJECT_NAME}_ALL_LINK_LIBS ${links} CACHE STRING "")
+		#link_libraries(${links})
+		search_and_link_libraries("${links}")
 
 		#----- compile flags -----
 		get_target_property(FLAGS ${PROJECT_NAME} COMPILE_FLAGS)
@@ -364,8 +397,11 @@ MACRO(create_project mode defines includes links)
 		endif()
 		
 		#------ need linker language flag for header only static libraries -----
-		SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-		
+		if(MY_CPP_SRC)
+			#set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE CXX)
+		else()
+			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
+		endif()
 		#------ need linker language flag for header only static libraries -----
 		if(APPLE)
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES MACOSX_RPATH ON)
@@ -461,3 +497,28 @@ MACRO(create_project mode defines includes links)
 		endif()
 	endif()
 ENDMACRO(create_project mode linLibraries)
+
+MACRO(post_create_project mode defines includes links)
+
+	FOREACH(curFile ${allProjects})
+		if(${PROJECT_NAME}_INITIALIZED)
+			get_filename_component(fileDir ${curFile} DIRECTORY)
+			get_folder_name(${fileDir} PROJECT_NAME)
+
+			foreach(lib ${libs})
+				list(FIND PROJECT_NAMES ${lib} index)
+				if(NOT index EQUAL -1)
+					message("found target: ${lib} ${index}")
+					list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${lib})
+					link_libraries(${lib})
+				else()
+					message("couldn't find target: ${lib}")
+					file(GLOB_RECURSE mysql_dir "${CMAKE_SOURCE_DIR}/*${lib}")
+					#find_path(lib_dir ${lib} ${CMAKE_SOURCE_DIR})
+					message("mysql from ${CMAKE_SOURCE_DIR} is :${mysql_dir}")
+				endif()
+			endforeach()	
+		endif()
+	ENDFOREACH(curFile ${allProjects})
+
+ENDMACRO()
