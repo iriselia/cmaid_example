@@ -43,6 +43,7 @@ MACRO(create_build global_define )
 			include( Optional/PrecompileFlexBison )
 		endif()
 		
+		message("running")
 
 		#parse the directory name for caching project specific include dirs
 		get_folder_name(${fileDir} PROJECT_NAME)
@@ -147,6 +148,8 @@ MACRO(create_build global_define )
 			unset(${PROJECT_NAME}_PUBLIC_INCLUDE_FILES CACHE)
 			set(${PROJECT_NAME}_PUBLIC_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
 		endif()
+
+		set(${PROJECT_NAME}_INITIALIZED ON CACHE BOOL "")
 	ENDFOREACH(curFile ${allProjects})
 
 	SET(PROJECT_COUNT 0)
