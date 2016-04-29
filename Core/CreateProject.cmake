@@ -97,6 +97,16 @@ ENDMACRO()
 #
 MACRO(create_project mode defines includes links)
 
+	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	    #MESSAGE( "64 bits compiler detected" )
+	    #SET( EX_PLATFORM 64 )
+	   # SET( EX_PLATFORM_NAME "x64" )
+	else( CMAKE_SIZEOF_VOID_P EQUAL 8 ) 
+	    #MESSAGE( "32 bits compiler detected" )
+	   # SET( EX_PLATFORM 32 )
+	   # SET( EX_PLATFORM_NAME "x86" )
+	endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
 	#----- Create Project -----
 	get_folder_name(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_NAME)
 	if(${PROJECT_NAME}_INITIALIZED)
@@ -107,7 +117,7 @@ MACRO(create_project mode defines includes links)
 		set(should_build OFF)
 	endif()
 	
-	if(NOT should_build)
+	if(NOT ${should_build})
 		#----- Cache Call Arguments -----
 		unset(${PROJECT_NAME}_INCLUDES CACHE)
 		unset(${PROJECT_NAME}_MODE CACHE)

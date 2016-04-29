@@ -42,8 +42,6 @@ MACRO(create_build global_define )
 		if( USE_FLEX_AND_BISON )
 			include( Optional/PrecompileFlexBison )
 		endif()
-		
-		message("running")
 
 		#parse the directory name for caching project specific include dirs
 		get_folder_name(${fileDir} PROJECT_NAME)
@@ -148,8 +146,6 @@ MACRO(create_build global_define )
 			unset(${PROJECT_NAME}_PUBLIC_INCLUDE_FILES CACHE)
 			set(${PROJECT_NAME}_PUBLIC_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
 		endif()
-
-		set(${PROJECT_NAME}_INITIALIZED ON CACHE BOOL "")
 	ENDFOREACH(curFile ${allProjects})
 
 	SET(PROJECT_COUNT 0)
@@ -170,6 +166,10 @@ MACRO(create_build global_define )
 		#create_project: CreateProject.cmake on fileDir
 		add_subdirectory( ${fileDir} )
 		
+		if(NOT ${PROJECT_NAME}_INITIALIZED)
+			set(${PROJECT_NAME}_INITIALIZED ON CACHE BOOL "")
+		endif()
+
 		if(${PROJECT_NAME}_INITIALIZED)
 			set(SecondBuild true)
 
