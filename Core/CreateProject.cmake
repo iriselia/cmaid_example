@@ -436,6 +436,7 @@ MACRO(create_project mode defines includes links)
 			#MESSAGE("${OSX_VERSION_STRING}")
    			SET(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION_STRING} CACHE STRING "Deployment target for OSX" FORCE)
 
+			target_compile_features(${PROJECT_NAME} PRIVATE cxx_range_for)
 #TODO: CLEAN UP.
 
 # use, i.e. don't skip the full RPATH for the build tree
