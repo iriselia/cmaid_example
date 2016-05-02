@@ -509,10 +509,13 @@ MACRO(create_project mode defines includes links)
 				
 			add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}PreBuild)
 				
-			#if( MSVC )
+			if( MSVC )
 				SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-				SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER ZERO_CHECK/PreBuild)
-			#endif()
+				SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER PreBuildScripts)
+			else()
+				SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+				SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER ZERO_CHECK/PreBuildScripts)				
+			endif()
 		endif()
 
 		if(${PROJECT_NAME}_INITIALIZED)
