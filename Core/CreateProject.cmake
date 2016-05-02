@@ -396,7 +396,7 @@ MACRO(create_project mode defines includes links)
 		endif()
 
 		#------ set target filter -----
-		if( MSVC )
+		#if( MSVC )
 			# TODO: OPTIMIZE THIS
 			string(REPLACE "/" ";" sourceDirList "${CMAKE_SOURCE_DIR}")
 			string(REPLACE "/" ";" currSourceDirList "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -411,7 +411,7 @@ MACRO(create_project mode defines includes links)
 		
 			SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 			SET_PROPERTY(TARGET ${PROJECT_NAME}		PROPERTY FOLDER ${filterDir})
-		endif()
+		#endif()
 		
 		#------ need linker language flag for header only static libraries -----
 		if(${PROJECT_NAME}_CPP_SRC)
@@ -499,7 +499,7 @@ MACRO(create_project mode defines includes links)
 		endif()
 
 		# Shader Copy
-		if( NOT MY_SHADERS STREQUAL "" )
+		if( NOT ${PROJECT_NAME}_SHhADERS STREQUAL "" )
 			add_custom_target(${PROJECT_NAME}PreBuild ALL
 				COMMAND ${CMAKE_COMMAND}
 				-DSrcDir=${CMAKE_CURRENT_SOURCE_DIR}
@@ -509,10 +509,10 @@ MACRO(create_project mode defines includes links)
 				
 			add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}PreBuild)
 				
-			if( MSVC )
+			#if( MSVC )
 				SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-				SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER CMakePredefinedTargets)
-			endif()
+				SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER ZERO_CHECK/PreBuild)
+			#endif()
 		endif()
 
 		if(${PROJECT_NAME}_INITIALIZED)
