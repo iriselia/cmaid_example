@@ -359,8 +359,10 @@ MACRO(create_project mode defines includes links)
 		endif()
 		
 		#----- Handle includes -----
-		#message("${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
-		list(REMOVE_DUPLICATES ${PROJECT_NAME}_ALL_INCLUDE_DIRS)
+		#message("is ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
+		if(${PROJECT_NAME}_ALL_INCLUDE_DIRS)
+			list(REMOVE_DUPLICATES ${PROJECT_NAME}_ALL_INCLUDE_DIRS)
+		endif()
 		target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
 
 		#----- Handle Links -----
@@ -415,7 +417,7 @@ MACRO(create_project mode defines includes links)
 		
 		#------ need linker language flag for header only static libraries -----
 		if(${PROJECT_NAME}_CPP_SRC)
-			message("has cpp ${${PROJECT_NAME}_CPP_SRC}")
+			#message("has cpp ${${PROJECT_NAME}_CPP_SRC}")
 			#set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE CXX)
 		else()
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
