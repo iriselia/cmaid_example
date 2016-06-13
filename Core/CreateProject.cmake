@@ -140,8 +140,8 @@ MACRO(create_project mode defines includes links)
 		add_definitions("-DPROJECT_NAME=\"${PROJECT_NAME}\"")
 		add_definitions("-DPROJECT_ID=${PROJECT_COUNT}")
 		
-		file(GLOB_RECURSE ${PROJECT_NAME}_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
-		file(GLOB_RECURSE ${PROJECT_NAME}_CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+		file(GLOB_RECURSE ${PROJECT_NAME}_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+		file(GLOB_RECURSE ${PROJECT_NAME}_CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
 		file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.inl)
 		file(GLOB_RECURSE ${PROJECT_NAME}_PRECOMPILED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/*.pch.h)
 		
@@ -211,6 +211,9 @@ MACRO(create_project mode defines includes links)
 			if(EXISTS ${currentName})
 				# if exists, it is a directory
 				list(APPEND includeDirs ${currentName})
+			elseif(EXISTS ${CMAKE_SOURCE_DIR}/${currentName})
+				# or if it exists in the cmake source dir, it is a relative path
+				list(APPEND includeDirs ${CMAKE_SOURCE_DIR}/${currentName})
 			else()
 				# if doesn't exist, it is a target, we retrieve the include dirs by appending _INCLUDE_DIRS to its name
 				#list(APPEND includeDirs ${${currentName}_PUBLIC_INCLUDE_DIRS})
@@ -227,6 +230,7 @@ MACRO(create_project mode defines includes links)
 		ENDFOREACH(currentName ${includes})
 		set(${PROJECT_NAME}_INCLUDES "${includeProjs}" CACHE STRING "")
 		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${includeDirs})
+		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 		# Add links
 		
 		#----- Mark PRECOMPILED HEADER -----
@@ -292,8 +296,8 @@ MACRO(create_project mode defines includes links)
 			file(WRITE ${generatedSource} ${generatedSourceContent})
 		endif()
 
-		SOURCE_GROUP("Generated" FILES ${generatedHeader})
-		SOURCE_GROUP("Generated" FILES ${generatedSource})
+		SOURCE_GROUP("CMakeGenerated" FILES ${generatedHeader})
+		SOURCE_GROUP("CMakeGenerated" FILES ${generatedSource})
 		list(APPEND ${PROJECT_NAME}_HEADERS ${generatedHeader})
 		list(APPEND ${PROJECT_NAME}_SRC ${generatedSource})
 
@@ -358,6 +362,9 @@ MACRO(create_project mode defines includes links)
 			endif()
 		endif()
 		
+		#----- Exclude from all -----
+		set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+
 		#----- Handle includes -----
 		#message("is ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
 		if(${PROJECT_NAME}_ALL_INCLUDE_DIRS)
@@ -502,21 +509,23 @@ MACRO(create_project mode defines includes links)
 
 		# Shader Copy
 		if( NOT ${PROJECT_NAME}_SHhADERS STREQUAL "" )
-			add_custom_target(${PROJECT_NAME}PreBuild ALL
+			add_custom_command(
+				TARGET ${PROJECT_NAME}
+				PRE_BUILD
 				COMMAND ${CMAKE_COMMAND}
 				-DSrcDir=${CMAKE_CURRENT_SOURCE_DIR}
 				-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
 				-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
 				COMMENT "Copying resource files to the binary output directory")
 				
-			add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}PreBuild)
+			#add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}PreBuild)
 				
 			if( MSVC )
 				SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-				SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER PreBuildScripts)
+				#SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER PreBuildScripts)
 			else()
 				SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-				SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER ZERO_CHECK/PreBuildScripts)				
+				#SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER ZERO_CHECK/PreBuildScripts)				
 			endif()
 		endif()
 
