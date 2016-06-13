@@ -369,8 +369,8 @@ MACRO(create_project mode defines includes links)
 			endif()
 		endif()
 		
-		#----- Exclude from all -----
-		set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+		#----- Exclude from all (Disabled)-----
+		#set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 
 		#----- Handle includes -----
 		#message("is ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
