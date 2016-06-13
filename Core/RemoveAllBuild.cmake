@@ -53,7 +53,7 @@ if (NOT "${startIndex}" STREQUAL "-1" AND NOT "${endIndex}" STREQUAL "-1")
 	list(REMOVE_AT solutionTextList ${startIndex})
 
 	STRING(REGEX REPLACE ";" "\n" solutionText "${solutionTextList}")
-	#file(WRITE ${solution} "${solutionText}")
+	file(WRITE ${solution} "${solutionText}")
 endif()
 #message("allBuildProjs: ${allBuildProjs}")
 
