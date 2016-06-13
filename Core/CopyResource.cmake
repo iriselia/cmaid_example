@@ -25,7 +25,7 @@ file(GLOB_RECURSE MY_CONFIG_FILES ${SrcDir}/Config/*)
 foreach(configFile ${MY_CONFIG_FILES})
 	FILE(RELATIVE_PATH relPath ${SrcDir} ${configFile})
 	configure_file(
-		${shaderFile}
+		${configFile}
 		${DestDir}/${relPath} COPYONLY)
 endforeach()
 
