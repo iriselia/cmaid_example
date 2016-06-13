@@ -148,6 +148,7 @@ MACRO(create_project mode defines includes links)
 		file(GLOB_RECURSE ${PROJECT_NAME}_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.rc ${CMAKE_CURRENT_SOURCE_DIR}/*.r ${CMAKE_CURRENT_SOURCE_DIR}/*.resx)
 		file(GLOB_RECURSE ${PROJECT_NAME}_PROTO ${CMAKE_CURRENT_SOURCE_DIR}/*.proto)
 		file(GLOB_RECURSE ${PROJECT_NAME}_MISC ${CMAKE_CURRENT_SOURCE_DIR}/*.l ${CMAKE_CURRENT_SOURCE_DIR}/*.y)
+		file(GLOB_RECURSE ${PROJECT_NAME}_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/Config/*)
 		file(GLOB_RECURSE ${PROJECT_NAME}_SHADERS
 			${CMAKE_CURRENT_SOURCE_DIR}/*.vert
 			${CMAKE_CURRENT_SOURCE_DIR}/*.frag
@@ -188,10 +189,15 @@ MACRO(create_project mode defines includes links)
 			SOURCE_GROUP("Proto Files" FILES ${${PROJECT_NAME}_PROTO})
 		endif()
 
+		if( NOT ${PROJECT_NAME}_CONFIG STREQUAL "" )
+			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_CONFIG})
+		endif()
+		
 		if( NOT ${PROJECT_NAME}_MISC STREQUAL "" )
 			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_MISC})
 		endif()
 
+		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_CONFIG})
 		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_PROTO})
 
 		if( (${PROJECT_NAME}_SRC STREQUAL "") AND (${PROJECT_NAME}_HEADERS STREQUAL "") )
@@ -515,7 +521,7 @@ MACRO(create_project mode defines includes links)
 			##message("FIX COPY")
 		endif()
 
-		# Shader Copy
+		# Resource Copy
 		if( NOT ${PROJECT_NAME}_SHhADERS STREQUAL "" )
 			add_custom_command(
 				TARGET ${PROJECT_NAME}
