@@ -192,7 +192,7 @@ MACRO(create_project mode defines includes links)
 		if( NOT ${PROJECT_NAME}_CONFIG STREQUAL "" )
 			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_CONFIG})
 		endif()
-		
+
 		if( NOT ${PROJECT_NAME}_MISC STREQUAL "" )
 			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_MISC})
 		endif()
@@ -399,7 +399,7 @@ MACRO(create_project mode defines includes links)
 		set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${FLAGS} ${outCompileFlags}")
 
 		if( MSVC )
-			if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
+			#if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
 				set(CompilerFlags
 					CMAKE_CXX_FLAGS
 					CMAKE_CXX_FLAGS_DEBUG
@@ -415,7 +415,7 @@ MACRO(create_project mode defines includes links)
 				foreach(CompilerFlag ${CompilerFlags})
 					string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
 				endforeach()
-			endif()
+			#endif()
 		endif()
 
 		#------ set target filter -----
