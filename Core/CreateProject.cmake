@@ -139,6 +139,8 @@ MACRO(create_project mode defines includes links)
 		#----- Add Project Name -----
 		add_definitions("-DPROJECT_NAME=\"${PROJECT_NAME}\"")
 		add_definitions("-DPROJECT_ID=${PROJECT_COUNT}")
+
+		#file(GLOB ${PROJECT_NAME}_BATCH_SCRIPTS ${CMAKE_SOURCE_DIR}/*Generate*.bat)
 		
 		file(GLOB_RECURSE ${PROJECT_NAME}_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c++ ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 		file(GLOB_RECURSE ${PROJECT_NAME}_CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c++)
@@ -193,12 +195,17 @@ MACRO(create_project mode defines includes links)
 			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_CONFIG})
 		endif()
 
+		if( NOT ${PROJECT_NAME}_BATCH_SCRIPTS STREQUAL "" )
+			SOURCE_GROUP("" FILES ${${PROJECT_NAME}_BATCH_SCRIPTS})
+		endif()
+
 		if( NOT ${PROJECT_NAME}_MISC STREQUAL "" )
 			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_MISC})
 		endif()
 
 		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_CONFIG})
 		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_PROTO})
+		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_BATCH_SCRIPTS})
 
 		if( (${PROJECT_NAME}_SRC STREQUAL "") AND (${PROJECT_NAME}_HEADERS STREQUAL "") )
 			message(STATUS "Project is empty, a placeholder C header was created to set compiler language.")
