@@ -423,6 +423,10 @@ MACRO(create_project mode defines includes links)
 					string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
 				endforeach()
 			#endif()
+
+			# utils.cmake
+			get_WIN32_WINNT(ver)
+			add_definitions(-D_WIN32_WINNT=${ver})
 		endif()
 
 		#------ set target filter -----
