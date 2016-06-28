@@ -8,7 +8,7 @@ for /d %%a in ("%LOCALAPPDATA%\GitHub\PortableGit*") do (set Git=%%~fa\cmd\Git.e
 if Git == "" ( goto Error_MissingGitHub )
 
 "%Git%" add --all
-"%Git%" commit -m "Minor Update"
+"%Git%" commit
 "%Git%" push
 
 pause
