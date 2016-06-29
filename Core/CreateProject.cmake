@@ -425,8 +425,8 @@ MACRO(create_project mode defines includes links)
 			#endif()
 
 			# utils.cmake
-			get_WIN32_WINNT(ver)
-			add_definitions(-D_WIN32_WINNT=${ver})
+			#get_WIN32_WINNT(ver)
+			#add_definitions(-D_WIN32_WINNT=${ver})
 		endif()
 
 		#------ set target filter -----
