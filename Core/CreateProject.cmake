@@ -332,6 +332,8 @@ MACRO(create_project mode defines includes links)
 				"/Yu\"${usePrecompiled}\"
 				/FI\"${forceInclude}\"
 				/FI\"${${PROJECT_NAME}_PRIVATE_INCLUDE_FILES}\"
+				/FI\"${${PROJECT_NAME}_PROTECTED_INCLUDE_FILES}\"
+				/FI\"${${PROJECT_NAME}_PUBLIC_INCLUDE_FILES}\"
 				/Fp\"${precompiledOutputBinary}\""
 											   OBJECT_DEPENDS "${precompiledOutputBinary}")
 			
