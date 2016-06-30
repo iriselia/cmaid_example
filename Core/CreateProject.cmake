@@ -240,8 +240,10 @@ MACRO(create_project mode defines includes links)
 				#list(APPEND includeDirs ${${currentName}_PROTECTED_INCLUDE_DIRS})
 				#message("${currentName}_PRECOMPILED_INCLUDE_FILES: ${${currentName}_PRECOMPILED_INCLUDE_FILES}")
 				
-				# make the project completely public if it does not contain a .pch.h
-				if( "${${currentName}_PRECOMPILED_INCLUDE_FILES}" STREQUAL "")
+				# make the project completely public if it does not contain a .pri.h
+				if( "${${currentName}_PRIVATE_INCLUDE_FILES}" STREQUAL "")
+					#message("${currentName} has no file")
+					#message("${currentName} has : ${${currentName}_ALL_INCLUDE_DIRS} ")
 					list(APPEND includeDirs ${${currentName}_ALL_INCLUDE_DIRS} )
 				endif()
 				list(APPEND includeDirs ${${currentName}_SOURCE_DIR})
@@ -395,9 +397,10 @@ MACRO(create_project mode defines includes links)
 		#----- Handle includes -----
 		#message("is ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
 		if(${PROJECT_NAME}_ALL_INCLUDE_DIRS)
+			#message("${PROJECT_NAME}_ALL_INCLUDE_DIRS: ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
 			list(REMOVE_DUPLICATES ${PROJECT_NAME}_ALL_INCLUDE_DIRS)
 		endif()
-		target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
+		target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
 
 		#----- Handle Links -----
 		#set(${PROJECT_NAME}_ALL_LINK_LIBS ${links} CACHE STRING "")

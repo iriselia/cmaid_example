@@ -63,7 +63,11 @@ MACRO(create_build global_define )
 			list (APPEND CURRENT_INCLUDE_DIRS ${fileDir}/../)
 			#include current include dirs and cache the content
 			unset(${PROJECT_NAME}_ALL_INCLUDE_DIRS CACHE)
+			# Recursive Include
 			set(${PROJECT_NAME}_ALL_INCLUDE_DIRS "${CURRENT_INCLUDE_DIRS}" CACHE STRING "")
+			# Project Dir only Include
+			#set(${PROJECT_NAME}_ALL_INCLUDE_DIRS "${${PROJECT_NAME}_SOURCE_DIR_CACHED}" CACHE STRING "")
+
 		endif()
 		
 		#----- Private pre-compiled Header -----
