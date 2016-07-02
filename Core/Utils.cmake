@@ -66,3 +66,14 @@ macro(get_WIN32_WINNT version)
 		set(${version} "0x${ver}")
 	endif()
 endmacro()
+
+#
+#
+#
+function(UPDATE_RESOURCE_FILE inFile outFile)
+	file(TIMESTAMP ${inFile} inStamp)
+	file(TIMESTAMP ${outFile} outStamp)
+	if(NOT "${inStamp}" STREQUAL "${outStamp}")
+		configure_file(${inFile} ${outFile})
+	endif()
+endfunction()

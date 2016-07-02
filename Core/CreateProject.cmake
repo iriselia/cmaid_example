@@ -187,6 +187,8 @@ MACRO(create_project mode defines includes links)
 			endforeach()
 		endif()
 
+		LIST(APPEND ${PROJECT_NAME}_RESOURCES ${${PROJECT_NAME}_CONFIG})
+
 		if( NOT ${PROJECT_NAME}_PROTO STREQUAL "" )
 			SOURCE_GROUP("Proto Files" FILES ${${PROJECT_NAME}_PROTO})
 		endif()
@@ -203,7 +205,6 @@ MACRO(create_project mode defines includes links)
 			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${${PROJECT_NAME}_MISC})
 		endif()
 
-		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_CONFIG})
 		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_PROTO})
 		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_BATCH_SCRIPTS})
 
@@ -522,11 +523,13 @@ MACRO(create_project mode defines includes links)
 			if(NOT projectExtension STREQUAL "")
 				string(REPLACE "/" "\\" arg1 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}*${projectExtension}")
 				string(REPLACE "/" "\\" arg2 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../")
-				add_custom_command(TARGET ${PROJECT_NAME}
-				   POST_BUILD
-				   COMMAND "COPY"
-				   ARGS "1>Nul" "2>Nul" "${arg1}" "${arg2}" "/Y"
-				   COMMENT "Copying resource files to the binary output directory...")
+				add_custom_command(
+					TARGET ${PROJECT_NAME}
+					#OUTPUT always_rebuild
+				    POST_BUILD
+				    COMMAND "COPY"
+				    ARGS "1>Nul" "2>Nul" "${arg1}" "${arg2}" "/Y"
+				    COMMENT "Copying resource files to the binary output directory...")
 			endif()
 		else()
 			if(NOT projectExtension STREQUAL "")
@@ -542,7 +545,7 @@ MACRO(create_project mode defines includes links)
 		endif()
 
 		# Resource Copy
-		if( NOT ${PROJECT_NAME}_SHhADERS STREQUAL "" )
+		if( NOT ${${PROJECT_NAME}_RESOURCES} STREQUAL "" )
 			add_custom_command(
 				TARGET ${PROJECT_NAME}
 				PRE_BUILD
@@ -551,7 +554,16 @@ MACRO(create_project mode defines includes links)
 				-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
 				-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
 				COMMENT "Copying resource files to the binary output directory")
-				
+			
+			add_custom_command(
+				TARGET ${PROJECT_NAME}
+				PRE_BUILD
+				COMMAND ${CMAKE_COMMAND}
+				-DSrcDir=${CMAKE_CURRENT_SOURCE_DIR}
+				-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
+				-P ${CMAKE_MODULE_PATH}/Core/Rerun.cmake
+				COMMENT "1111111111111111111111111111111111111111111RerunRerun")
+
 			#add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}PreBuild)
 				
 			if( MSVC )
@@ -562,6 +574,10 @@ MACRO(create_project mode defines includes links)
 				#SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER ZERO_CHECK/PreBuildScripts)				
 			endif()
 		endif()
+
+		#Installation
+		RERUN_CMAKE()
+		#install(SCRIPT ${CMAKE_MODULE_PATH}/Core/Install.cmake)
 
 		if(${PROJECT_NAME}_INITIALIZED)
 			#unset(${PROJECT_NAME}_INITIALIZED CACHE)

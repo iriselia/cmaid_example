@@ -4,5 +4,6 @@ include( Core/SetOutputDirectories )
 include( Core/ProjectSettingsTemplate )
 include( Core/CreateProject )
 include( Core/CreateBuild )
+include( Core/Rerun )
 
 include( Core/DotNetReferences )
