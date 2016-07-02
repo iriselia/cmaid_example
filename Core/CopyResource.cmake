@@ -19,7 +19,7 @@ foreach(shaderFile ${MY_SHADERS})
 		${DestDir}/${relPath} COPYONLY)
 endforeach()
 
-file(GLOB_RECURSE MY_CONFIG_FILES ${SrcDir}/Config/*)
+file(GLOB_RECURSE MY_CONFIG_FILES ${SrcDir}/*.ini)
 
 # Copy Config files
 foreach(configFile ${MY_CONFIG_FILES})

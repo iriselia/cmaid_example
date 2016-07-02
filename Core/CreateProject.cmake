@@ -323,21 +323,21 @@ MACRO(create_project mode defines includes links)
 			file(WRITE ${generatedSource} ${generatedSourceContent})
 		endif()
 
-		SOURCE_GROUP("CMakeGenerated" FILES ${generatedHeader})
-		SOURCE_GROUP("CMakeGenerated" FILES ${generatedSource})
+		SOURCE_GROUP("Interface" FILES ${generatedHeader})
+		SOURCE_GROUP("Interface" FILES ${generatedSource})
 		list(APPEND ${PROJECT_NAME}_HEADERS ${generatedHeader})
 		list(APPEND ${PROJECT_NAME}_SRC ${generatedSource})
 
 		if(MSVC)
 			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SRC}
 				PROPERTIES COMPILE_FLAGS
-				"/Yu\"${usePrecompiled}\"
-				/FI\"${forceInclude}\"
+				"/Yu\"${generatedHeader}\"
+				/FI\"${generatedHeader}\"
 				/FI\"${${PROJECT_NAME}_PRIVATE_INCLUDE_FILES}\"
 				/FI\"${${PROJECT_NAME}_PROTECTED_INCLUDE_FILES}\"
 				/FI\"${${PROJECT_NAME}_PUBLIC_INCLUDE_FILES}\"
 				/Fp\"${precompiledOutputBinary}\""
-											   OBJECT_DEPENDS "${precompiledOutputBinary}")
+				OBJECT_DEPENDS "${precompiledOutputBinary}")
 			
 			if(NOT ${PROJECT_NAME}_CPP_SRC)
 				set(COMPILER_LANGUAGE "/TC")
