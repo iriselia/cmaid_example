@@ -24,6 +24,11 @@ file(GLOB_RECURSE MY_CONFIG_FILES ${SrcDir}/*.ini)
 # Copy Config files
 foreach(configFile ${MY_CONFIG_FILES})
 	FILE(RELATIVE_PATH relPath ${SrcDir} ${configFile})
+	string(REPLACE "/" ";" relPathList "${relPath}")
+	list(REMOVE_AT relPathList 0)
+	#get_filename_component(fileName ${configFile} NAME)
+	string(REPLACE ";" "/" relPath "${relPathList}")
+	
 	configure_file(
 		${configFile}
 		${DestDir}/${relPath} COPYONLY)
