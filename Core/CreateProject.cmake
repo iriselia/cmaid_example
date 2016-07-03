@@ -98,11 +98,11 @@ ENDMACRO()
 MACRO(create_project mode defines includes links)
 
 	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-	    #MESSAGE( "64 bits compiler detected" )
-	    #SET( EX_PLATFORM 64 )
+		#MESSAGE( "64 bits compiler detected" )
+		#SET( EX_PLATFORM 64 )
 	   # SET( EX_PLATFORM_NAME "x64" )
 	else( CMAKE_SIZEOF_VOID_P EQUAL 8 ) 
-	    #MESSAGE( "32 bits compiler detected" )
+		#MESSAGE( "32 bits compiler detected" )
 	   # SET( EX_PLATFORM 32 )
 	   # SET( EX_PLATFORM_NAME "x86" )
 	endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
@@ -228,7 +228,8 @@ MACRO(create_project mode defines includes links)
 		# Process include list, an element could be a list of dirs or a target name
 		set(includeDirs "")
 		set(includeProjs "")
-		FOREACH(currentName ${includes})
+		message("${PROJECT_NAME} includes ${${PROJECT_NAME}_INCLUDES}")
+		FOREACH(currentName ${${PROJECT_NAME}_INCLUDES})
 			if(EXISTS ${currentName})
 				# if exists, it is a directory
 				list(APPEND includeDirs ${currentName})
@@ -243,16 +244,15 @@ MACRO(create_project mode defines includes links)
 				
 				# make the project completely public if it does not contain a .pri.h
 				if( "${${currentName}_PRIVATE_INCLUDE_FILES}" STREQUAL "")
-					#message("${currentName} has no file")
-					#message("${currentName} has : ${${currentName}_ALL_INCLUDE_DIRS} ")
+					message("${currentName} has no file")
 					list(APPEND includeDirs ${${currentName}_ALL_INCLUDE_DIRS} )
 				endif()
+				message("${currentName} has : ${${currentName}_ALL_INCLUDE_DIRS} ")
 				list(APPEND includeDirs ${${currentName}_SOURCE_DIR})
 				list(APPEND includeDirs ${${currentName}_BINARY_DIR})
 				list(APPEND includeProjs ${currentName})
 			endif()
 		ENDFOREACH(currentName ${includes})
-		set(${PROJECT_NAME}_INCLUDES "${includeProjs}" CACHE STRING "")
 		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${includeDirs})
 		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 		# Add links
@@ -401,9 +401,9 @@ MACRO(create_project mode defines includes links)
 		#----- Handle includes -----
 		#message("is ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
 		if(${PROJECT_NAME}_ALL_INCLUDE_DIRS)
-			#message("${PROJECT_NAME}_ALL_INCLUDE_DIRS: ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
 			list(REMOVE_DUPLICATES ${PROJECT_NAME}_ALL_INCLUDE_DIRS)
 		endif()
+		#message("${PROJECT_NAME}_ALL_INCLUDE_DIRS: ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
 		target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
 
 		#----- Handle Links -----
@@ -481,7 +481,7 @@ MACRO(create_project mode defines includes links)
 			LIST(GET OSX_VERSION_STRING 1 OSX_MINOR_VERSION)
 			SET(OSX_VERSION_STRING "${OSX_MAJOR_VERSION}.${OSX_MINOR_VERSION}")
 			#MESSAGE("${OSX_VERSION_STRING}")
-   			SET(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION_STRING} CACHE STRING "Deployment target for OSX" FORCE)
+			SET(CMAKE_OSX_DEPLOYMENT_TARGET ${OSX_VERSION_STRING} CACHE STRING "Deployment target for OSX" FORCE)
 
 			target_compile_features(${PROJECT_NAME} PRIVATE cxx_range_for)
 #TODO: CLEAN UP.
@@ -529,10 +529,10 @@ MACRO(create_project mode defines includes links)
 				add_custom_command(
 					TARGET ${PROJECT_NAME}
 					#OUTPUT always_rebuild
-				    POST_BUILD
-				    COMMAND "COPY"
-				    ARGS "1>Nul" "2>Nul" "${arg1}" "${arg2}" "/Y"
-				    COMMENT "Copying resource files to the binary output directory...")
+					POST_BUILD
+					COMMAND "COPY"
+					ARGS "1>Nul" "2>Nul" "${arg1}" "${arg2}" "/Y"
+					COMMENT "Copying resource files to the binary output directory...")
 			endif()
 		else()
 			if(NOT projectExtension STREQUAL "")
@@ -540,10 +540,10 @@ MACRO(create_project mode defines includes links)
 				set(arg2 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../")
 				add_custom_command(
 					TARGET ${PROJECT_NAME}
-				    POST_BUILD
-				    COMMAND "tar"
-				    ARGS  "-cf" "-" "${arg1}" "|" "tar" "-C${arg2}" "-xf" "-"
-				    COMMENT "Copying resource files to the binary output directory...")
+					POST_BUILD
+					COMMAND "tar"
+					ARGS  "-cf" "-" "${arg1}" "|" "tar" "-C${arg2}" "-xf" "-"
+					COMMENT "Copying resource files to the binary output directory...")
 			endif()
 			##message("FIX COPY")
 		endif()
