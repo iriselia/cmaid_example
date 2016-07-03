@@ -392,6 +392,9 @@ MACRO(create_project mode defines includes links)
 			endif()
 		endif()
 		
+		#----- Target Dependency -----
+		add_dependencies(${PROJECT_NAME} UPDATE_RESOURCE) #----- globally shared resource update
+
 		#----- Exclude from all (Disabled)-----
 		#set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 
@@ -535,29 +538,37 @@ MACRO(create_project mode defines includes links)
 			if(NOT projectExtension STREQUAL "")
 				set(arg1 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}*${projectExtension}")
 				set(arg2 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../")
-				add_custom_command(TARGET ${PROJECT_NAME}
-				   POST_BUILD
-				   COMMAND "tar"
-				   ARGS  "-cf" "-" "${arg1}" "|" "tar" "-C${arg2}" "-xf" "-"
-				   COMMENT "Copying resource files to the binary output directory...")
+				add_custom_command(
+					TARGET ${PROJECT_NAME}
+				    POST_BUILD
+				    COMMAND "tar"
+				    ARGS  "-cf" "-" "${arg1}" "|" "tar" "-C${arg2}" "-xf" "-"
+				    COMMENT "Copying resource files to the binary output directory...")
 			endif()
 			##message("FIX COPY")
 		endif()
 
 		# Resource Copy
 		if( NOT ${${PROJECT_NAME}_RESOURCES} STREQUAL "" )
-			add_custom_command(
-				TARGET ${PROJECT_NAME}
-				PRE_BUILD
-				COMMAND ${CMAKE_COMMAND}
-				-DSrcDir=${CMAKE_CURRENT_SOURCE_DIR}
-				-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
-				-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
-				COMMENT "Copying resource files to the binary output directory")
+			#----- Add custom command requires target be created in the same scope
+			cmake_policy(SET CMP0040 OLD)
+
+			#add_custom_target(
+			#	${PROJECT_NAME}_UPDATE_RESOURCE
+			#	DEPENDS always_rebuild
+			#)
+			#add_custom_command(
+			#	TARGET ${PROJECT_NAME}_UPDATE_RESOURCE
+			#	PRE_BUILD
+			#	COMMAND ${CMAKE_COMMAND}
+			#	-DSrcDir=${CMAKE_CURRENT_SOURCE_DIR}
+			#	-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
+			#	-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
+			#	COMMENT "Copying resource files to the binary output directory")
 			
-			#add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}PreBuild)
+			#add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_UPDATE_RESOURCE)
 				
-			if( MSVC )
+		if( MSVC )
 				SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 				#SET_PROPERTY(TARGET ${PROJECT_NAME}PreBuild		PROPERTY FOLDER PreBuildScripts)
 			else()
@@ -566,8 +577,6 @@ MACRO(create_project mode defines includes links)
 			endif()
 		endif()
 
-		#Installation
-		RERUN_CMAKE()
 		#install(SCRIPT ${CMAKE_MODULE_PATH}/Core/Install.cmake)
 
 		if(${PROJECT_NAME}_INITIALIZED)
