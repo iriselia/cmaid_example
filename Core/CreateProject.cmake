@@ -549,7 +549,7 @@ MACRO(create_project mode defines includes links)
 		endif()
 
 		# Resource Copy
-		if( NOT ${${PROJECT_NAME}_RESOURCES} STREQUAL "" )
+		if( NOT "${${PROJECT_NAME}_RESOURCES}" STREQUAL "" )
 			#----- Add custom command requires target be created in the same scope
 			cmake_policy(SET CMP0040 OLD)
 
