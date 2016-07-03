@@ -555,15 +555,6 @@ MACRO(create_project mode defines includes links)
 				-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
 				COMMENT "Copying resource files to the binary output directory")
 			
-			add_custom_command(
-				TARGET ${PROJECT_NAME}
-				PRE_BUILD
-				COMMAND ${CMAKE_COMMAND}
-				-DSrcDir=${CMAKE_CURRENT_SOURCE_DIR}
-				-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
-				-P ${CMAKE_MODULE_PATH}/Core/Rerun.cmake
-				COMMENT "1111111111111111111111111111111111111111111RerunRerun")
-
 			#add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}PreBuild)
 				
 			if( MSVC )
