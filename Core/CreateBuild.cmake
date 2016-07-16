@@ -110,7 +110,7 @@ MACRO(create_build global_define )
 			unset(${PROJECT_NAME}_PRECOMPILED_INCLUDE_FILES CACHE)
 			set(${PROJECT_NAME}_PRECOMPILED_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
 		endif()
-		
+
 		#----- Private Headers -----
 		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.pri.h ${fileDir}/*.pri.hpp ${fileDir}/*.pri.inl)
 		if( NOT MY_HEADERS STREQUAL "" )
