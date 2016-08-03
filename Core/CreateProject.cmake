@@ -1,4 +1,5 @@
 cmake_minimum_required( VERSION 2.8 )
+include(ProcessorCount)
 
 #
 #
@@ -170,6 +171,8 @@ MACRO(create_project mode defines includes links)
 		endif()
 		set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${FLAGS} ${outCompileFlags}")
 
+		ProcessorCount(ProcCount)
+
 		if( MSVC )
 			#if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
 				set(CompilerFlags
@@ -184,9 +187,14 @@ MACRO(create_project mode defines includes links)
 					CMAKE_C_FLAGS_RELEASE
 					CMAKE_C_FLAGS_RELWITHDEBINFO
 				)
-				foreach(CompilerFlag ${CompilerFlags})
-					#string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-				endforeach()
+
+
+				if (MSVC)
+					foreach(CompilerFlag ${CompilerFlags})
+						set(${CompilerFlag} "/MP${ProcCount} ${${CompilerFlag}}")
+						message("${${CompilerFlag}}")
+					endforeach()
+				endif()
 			#endif()
 
 			# utils.cmake
