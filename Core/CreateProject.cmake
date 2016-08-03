@@ -21,9 +21,15 @@ MACRO(create_project mode defines includes links)
 	if(${PROJECT_NAME}_INITIALIZED)
 		project( ${PROJECT_NAME} )
 		
-		set(should_build ON)
+		unset(${PROJECT_NAME}_FIRST_RUN CACHE)
+		unset(${PROJECT_NAME}_SECOND_RUN CACHE)
+		set(${PROJECT_NAME}_FIRST_RUN OFF CACHE BOOL "")
+		set(${PROJECT_NAME}_SECOND_RUN ON CACHE BOOL "")
 	else()
-		set(should_build OFF)
+		unset(${PROJECT_NAME}_FIRST_RUN CACHE)
+		unset(${PROJECT_NAME}_SECOND_RUN CACHE)
+		set(${PROJECT_NAME}_FIRST_RUN ON CACHE BOOL "")
+		set(${PROJECT_NAME}_SECOND_RUN OFF CACHE BOOL "")
 	endif()
 	
 	#----- Cache Call Arguments -----
@@ -34,7 +40,7 @@ MACRO(create_project mode defines includes links)
 	set(${PROJECT_NAME}_MODE "${mode}" CACHE STRING "")
 	set(${PROJECT_NAME}_INCLUDES "${includes}" CACHE STRING "")
 
-	if(NOT ${should_build})
+	if(NOT ${${PROJECT_NAME}_SECOND_RUN})
 
 		#----- SCAN SOURCE -----
 		#----- Scan Shader Files -----
@@ -42,7 +48,7 @@ MACRO(create_project mode defines includes links)
 	endif()
 
 	#----- The follow code will only be executed if build project is being run a second time -----
-	if( should_build )
+	if( ${PROJECT_NAME}_SECOND_RUN )
 		#message("Building: ${PROJECT_NAME}")
 		#----- Add Preprocessor Definitions -----
 		foreach(currMacro ${defines})
@@ -179,7 +185,7 @@ MACRO(create_project mode defines includes links)
 					CMAKE_C_FLAGS_RELWITHDEBINFO
 				)
 				foreach(CompilerFlag ${CompilerFlags})
-					string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+					#string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
 				endforeach()
 			#endif()
 
