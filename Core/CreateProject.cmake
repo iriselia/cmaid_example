@@ -43,6 +43,8 @@ MACRO(create_project mode defines includes links)
 
 	if(NOT ${${PROJECT_NAME}_SECOND_RUN})
 
+		set(${PROJECT_NAME}_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "")
+		set(${PROJECT_NAME}_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" CACHE STRING "")
 		#----- SCAN SOURCE -----
 		#----- Scan Shader Files -----
 
