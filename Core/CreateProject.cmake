@@ -33,7 +33,7 @@ MACRO(create_project mode defines includes links)
 		set(${PROJECT_NAME}_SECOND_RUN OFF CACHE BOOL "")
 	endif()
 	
-	#----- Cache Call Arguments -----
+	#----- Cache Call Params -----
 	unset(${PROJECT_NAME}_DEFINES CACHE)
 	unset(${PROJECT_NAME}_INCLUDES CACHE)
 	unset(${PROJECT_NAME}_MODE CACHE)
