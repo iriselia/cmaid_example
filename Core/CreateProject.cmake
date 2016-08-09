@@ -117,7 +117,13 @@ MACRO(create_project mode defines includes links)
 		else()
 			set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE C)
 		endif()
-				
+
+		if(XCODE)
+			if( ${PROJECT_NAME}_SRC STREQUAL "")
+				file(WRITE ${${PROJECT_NAME}_BINARY_DIR}/stub.c "")
+				list(APPEND ${PROJECT_NAME}_SRC ${${PROJECT_NAME}_BINARY_DIR}/stub.c)
+			endif()
+		endif()		
 		#----- CREATE TARGET -----
 		set(projectExtension "")
 		add_definitions("-DCURRENT_PROJECT_NAME_IS_${PROJECT_NAME}")

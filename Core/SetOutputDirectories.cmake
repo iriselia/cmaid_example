@@ -29,6 +29,6 @@ if(WIN32)
 add_definitions( "-DPLATFORM_WINDOWS" )
 endif(WIN32)
 
-if(MACOS)
+if(XCODE)
 add_definitions( "-DPLATFORM_MACOS" )
-endif(MACOS)
+endif(XCODE)
