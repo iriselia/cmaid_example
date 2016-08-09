@@ -110,9 +110,7 @@ MACRO(create_project mode defines includes links)
 		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${includeDirs})
 		list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 		# Add links
-		
-		GeneratePrecompiledHeader()
-		
+				
 		# Force C++ if there's any cpp file
 		if(${PROJECT_NAME}_CPP_SRC)
 			set_source_files_properties(${${PROJECT_NAME}_SRC} PROPERTIES LANGUAGE CXX)
@@ -168,6 +166,9 @@ MACRO(create_project mode defines includes links)
 				set(projectExtension "")
 			endif()
 		endif()
+		
+		GeneratePrecompiledHeader()
+
 		
 		#----- Target Dependency -----
 		add_dependencies(${PROJECT_NAME} UPDATE_RESOURCE) #----- globally shared resource update

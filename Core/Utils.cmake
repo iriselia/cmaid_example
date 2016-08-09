@@ -171,6 +171,12 @@ macro(GeneratePrecompiledHeader)
 				PROPERTIES COMPILE_FLAGS "${COMPILER_LANGUAGE} /Yc\"${generatedHeaderName}\" /Fp\"${generatedBinary}\""
 				OBJECT_OUTPUTS "${generatedBinary}")
 		endif()
+
+		if(XCODE)
+			message("here we are")
+			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER "${generatedHeader}")
+			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER "YES")
+		endif()
 		##else( NOT ${PRECOMPILED_HEADER} STREQUAL "")
 		##	file(WRITE "${${PROJECT_NAME}_BINARY_DIR}/${PROJECT_NAME}.generated.pub.h" )
 		##endif()
