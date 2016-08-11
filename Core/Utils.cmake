@@ -1,4 +1,5 @@
 cmake_minimum_required( VERSION 2.8 )
+cmake_policy(SET CMP0054 NEW)
 
 # function(create_source_group sourceGroupName relativeSourcePath sourceFiles)
 #
@@ -115,6 +116,11 @@ macro(GeneratePrecompiledHeader)
 		string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* GENERATED HEADER FILE. DO NOT EDIT. */\n\n")
 		string(CONCAT generatedSourceContent ${generatedSourceContent} "/* GENERATED SOURCE FILE. DO NOT EDIT. */ \n\#include \"${generatedHeaderName}\"")
 		
+		if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
+		else()
+			string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* Symbol Export API */\n#include \"${PROJECT_NAME}_API.generated.h\"\n")
+		endif()
+
 		# Add user-defined precompiled header to generated precompiled header
 		string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* Private pre-compiled header */\n")
 		if(NOT ${PRECOMPILED_HEADER_NAME} STREQUAL "")
@@ -148,11 +154,6 @@ macro(GeneratePrecompiledHeader)
 			file(WRITE ${generatedSource} ${generatedSourceContent})
 		endif()
 
-		SOURCE_GROUP("Interface" FILES ${generatedHeader})
-		SOURCE_GROUP("Interface" FILES ${generatedSource})
-		list(APPEND ${PROJECT_NAME}_HEADERS ${generatedHeader})
-		list(APPEND ${PROJECT_NAME}_SRC ${generatedSource})
-
 		if(MSVC)
 			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SRC}
 				PROPERTIES COMPILE_FLAGS
@@ -163,7 +164,7 @@ macro(GeneratePrecompiledHeader)
 				/FI\"${${PROJECT_NAME}_PUBLIC_INCLUDE_FILES}\"
 				/Fp\"${precompiledOutputBinary}\""
 				OBJECT_DEPENDS "${precompiledOutputBinary}")
-			
+
 			if(NOT ${PROJECT_NAME}_CPP_SRC)
 				set(COMPILER_LANGUAGE "/TC")
 			endif()
@@ -172,10 +173,11 @@ macro(GeneratePrecompiledHeader)
 				OBJECT_OUTPUTS "${generatedBinary}")
 		endif()
 
-		if(XCODE)
-			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER "${generatedHeader}")
-			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER "YES")
-		endif()
+		SOURCE_GROUP("Interface" FILES ${generatedHeader})
+		SOURCE_GROUP("Interface" FILES ${generatedSource})
+		list(APPEND ${PROJECT_NAME}_HEADERS ${generatedHeader})
+		list(APPEND ${PROJECT_NAME}_SRC ${generatedSource})
+
 		##else( NOT ${PRECOMPILED_HEADER} STREQUAL "")
 		##	file(WRITE "${${PROJECT_NAME}_BINARY_DIR}/${PROJECT_NAME}.generated.pub.h" )
 		##endif()
@@ -217,9 +219,11 @@ MACRO(force_include_public_recursive compileFlags includeProj outString)
 	if(NOT ${${includeProj}_PUBLIC_INCLUDE_FILES} STREQUAL "")
 		foreach(pubFile ${${includeProj}_PUBLIC_INCLUDE_FILES})
 			FILE(RELATIVE_PATH folder ${${includeProj}_SOURCE_DIR_CACHED} ${pubFile})
+			add_definitions("-D${includeProj}_PROJECT_ID=${${includeProj}_ID}")
+			string(CONCAT ${outString} ${${outString}} "\#include \"${includeProj}_API.generated.h\"\n")
 			string(CONCAT ${outString} ${${outString}} "\#include \"${folder}\"\n")
 			if(MSVC)
-				string(CONCAT ${compileFlags} ${${compileFlags}} " " "/FI\"${folder}\"")
+				#string(CONCAT ${compileFlags} ${${compileFlags}} " " "/FI\"${folder}\"")
 			endif()
 		endforeach()
 	else()
@@ -231,7 +235,7 @@ MACRO(force_include_public_recursive compileFlags includeProj outString)
 			FILE(RELATIVE_PATH folder ${${includeProj}_SOURCE_DIR_CACHED} ${pubFile})
 			string(CONCAT ${outString} ${${outString}} "\#include \"${folder}\"\n")
 			if(MSVC)
-				string(CONCAT ${compileFlags} ${${compileFlags}} " " "/FI\"${folder}\"")
+				#string(CONCAT ${compileFlags} ${${compileFlags}} " " "/FI\"${folder}\"")
 			endif()
 		endforeach()
 	endif()

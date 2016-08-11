@@ -1,0 +1,21 @@
+/* GENERATED HEADER FILE. DO NOT EDIT. */
+
+#pragma once
+
+#if CURRENT_PROJECT_ID == @PROJECT_NAME@_PROJECT_ID
+	#if @PROJECT_NAME@_IS_STATIC
+		#define @PROJECT_NAME@_API
+	#elif @PROJECT_NAME@_IS_SHARED
+		#define @PROJECT_NAME@_API __declspec(dllexport)
+	#elif @PROJECT_NAME@_IS_MODULE
+		#define @PROJECT_NAME@_API __declspec(dllexport)
+	#endif
+#elif CURRENT_PROJECT_ID != @PROJECT_NAME@_PROJECT_ID
+	#if @PROJECT_NAME@_IS_STATIC
+		#define @PROJECT_NAME@_API extern
+	#elif @PROJECT_NAME@_IS_SHARED
+		#define @PROJECT_NAME@_API __declspec(dllimport)
+	#elif @PROJECT_NAME@_IS_MODULE
+		#error "__declspec(dllimport)" cannot be used to import symbols from modules.
+	#endif
+#endif

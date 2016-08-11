@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 2.8 )
-
+cmake_policy(SET CMP0054 NEW)
 
 MACRO(create_build global_define )
 	unset(PROJECT_NAMES CACHE)
@@ -197,6 +197,12 @@ MACRO(create_build global_define )
 
 		if(${PROJECT_NAME}_INITIALIZED)
 			set(SecondBuild true)
+			
+			if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
+			else()
+				CONFIGURE_FILE(${CMAKE_MODULE_PATH}/Core/SymbolExportAPITemplate.template ${${PROJECT_NAME}_BINARY_DIR}/${PROJECT_NAME}_API.generated.h @ONLY)
+				set(${PROJECT_NAMES}_EXPORT_API "${PROJECT_NAME}_ExportAPI.generated.h" CACHE STRING "")
+			endif()
 
 			MATH(EXPR PROJECT_COUNT "${PROJECT_COUNT}+1")
 			FILE(RELATIVE_PATH folder ${CMAKE_SOURCE_DIR} ${fileDir})
