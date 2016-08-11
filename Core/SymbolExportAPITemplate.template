@@ -12,7 +12,7 @@
 	#endif
 #elif CURRENT_PROJECT_ID != @PROJECT_NAME@_PROJECT_ID
 	#if @PROJECT_NAME@_IS_STATIC
-		#define @PROJECT_NAME@_API extern
+		#define @PROJECT_NAME@_API
 	#elif @PROJECT_NAME@_IS_SHARED
 		#define @PROJECT_NAME@_API __declspec(dllimport)
 	#elif @PROJECT_NAME@_IS_MODULE
