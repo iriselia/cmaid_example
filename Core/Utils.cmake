@@ -116,6 +116,17 @@ macro(GeneratePrecompiledHeader)
 		string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* GENERATED HEADER FILE. DO NOT EDIT. */\n\n")
 		string(CONCAT generatedSourceContent ${generatedSourceContent} "/* GENERATED SOURCE FILE. DO NOT EDIT. */ \n\#include \"${generatedHeaderName}\"")
 		
+		# Inherit pch
+		set(outCompileFlags "")
+		if(NOT "${${PROJECT_NAME}_RECURSIVE_INCLUDES}" STREQUAL "")
+			#(STATUS "Before: ${PROJECT_NAME}, includes ${includeProjs}")
+			force_include_recursive(outCompileFlags "${includeProjs}" generatedHeaderContent)
+			#message("After: ${generatedHeaderContent}")
+		else()
+			force_include_recursive(outCompileFlags "EMPTY" generatedHeaderContent)
+		endif()
+
+		# Add export api.h
 		if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
 		else()
 			string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* Symbol Export API */\n#include \"${PROJECT_NAME}_API.generated.h\"\n")
@@ -128,16 +139,6 @@ macro(GeneratePrecompiledHeader)
 			string(CONCAT generatedHeaderContent ${generatedHeaderContent} "\#include \"${PRECOMPILED_HEADER_NAME}\"\n")
 		else()
 			string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* ${PROJECT_NAME} does not contain pre-compiled header .pch.h */\n")
-		endif()
-		
-		
-		set(outCompileFlags "")
-		if(NOT "${${PROJECT_NAME}_RECURSIVE_INCLUDES}" STREQUAL "")
-			#(STATUS "Before: ${PROJECT_NAME}, includes ${includeProjs}")
-			force_include_recursive(outCompileFlags "${includeProjs}" generatedHeaderContent)
-			#message("After: ${generatedHeaderContent}")
-		else()
-			force_include_recursive(outCompileFlags "EMPTY" generatedHeaderContent)
 		endif()
 		
 		if(NOT existingGeneratedHeader STREQUAL "" AND NOT existingGeneratedSource STREQUAL "")

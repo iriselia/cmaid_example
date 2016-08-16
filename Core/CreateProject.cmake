@@ -175,6 +175,10 @@ MACRO(create_project mode defines includes links)
 			endif()
 		endif()
 		
+		if(MSVC)
+				add_definitions(/wd4251) # x needs to have dll-interface to be used by clients of class "y"
+		endif()
+
 		if(XCODE)
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_PREFIX_HEADER "${generatedHeader}")
 			SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER "YES")
