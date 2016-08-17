@@ -216,6 +216,9 @@ ENDMACRO()
 MACRO(force_include_public_recursive compileFlags includeProj outString)
 	list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${${includeProj}_SOURCE_DIR_CACHED})
 	
+	# inherit build _BUILD_TYPE
+	add_definitions("-D${${includeProj}_BUILD_TYPE}")
+
 	# include dependency first
 	foreach(subIncludeProj ${${includeProj}_INCLUDES})
 		force_include_public_recursive(${compileFlags} ${subIncludeProj} ${outString})
@@ -288,7 +291,7 @@ MACRO(search_and_link_libraries libs)
 				target_link_libraries(${PROJECT_NAME} PUBLIC ${lib})
 			endif()
 			#message("found target: -D${${lib}_BUILD_TYPE}")
-			add_definitions("-D${${lib}_BUILD_TYPE}")
+			#add_definitions("-D${${lib}_BUILD_TYPE}")
 		else()
 			#message("couldn't find target: ${lib}")
 			string(FIND ${lib} "." has_dot)
