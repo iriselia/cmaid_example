@@ -216,6 +216,11 @@ ENDMACRO()
 MACRO(force_include_public_recursive compileFlags includeProj outString)
 	list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${${includeProj}_SOURCE_DIR_CACHED})
 	
+	# include dependency first
+	foreach(subIncludeProj ${${includeProj}_INCLUDES})
+		force_include_public_recursive(${compileFlags} ${subIncludeProj} ${outString})
+	endforeach()
+
 	string(CONCAT ${outString} ${${outString}} "/* ${includeProj}: */ \n")
 
 	if(NOT ${${includeProj}_PRECOMPILED_INCLUDE_FILES} STREQUAL "")
@@ -244,9 +249,7 @@ MACRO(force_include_public_recursive compileFlags includeProj outString)
 
 	#string(CONCAT ${outString} ${${outString}} "\n")
 	#message("INCLUDES: ${${includeProj}_INCLUDES}")
-	foreach(subIncludeProj ${${includeProj}_INCLUDES})
-		force_include_public_recursive(${compileFlags} ${subIncludeProj} ${outString})
-	endforeach()
+
 ENDMACRO()
 
 MACRO(force_include_public compileFlags includeProjs outString)
