@@ -30,27 +30,6 @@ MACRO(create_build global_define )
 	#find all cmakelists files
 	file(GLOB_RECURSE allProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
 	list(REMOVE_ITEM allProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
-	
-	add_custom_target(
-		UPDATE_RESOURCE
-		DEPENDS always_rebuild
-	)
-	
-	add_custom_command(
-		TARGET UPDATE_RESOURCE
-		PRE_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		-DSrcDir=${CMAKE_SOURCE_DIR}/Source
-		-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
-		-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
-		COMMENT "Copying resource files to the binary output directory")
-
-	SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-	if( MSVC )
-		SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER CMakePredefinedTargets)
-	else()
-		SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER ZERO_CHECK/CMakePredefinedTargets)				
-	endif()
 
 	#Pre-Configure cache include dirs prior to adding subdirectories
 	FOREACH(curFile ${allProjects})
@@ -238,5 +217,32 @@ MACRO(create_build global_define )
 
 	if(NOT SecondBuild)
 		message("Purify only initializes cache on the first build. Configure and generate again to complete the generation process.")
+	else()
+		FOREACH(curFile ${allProjects})
+			#get the directory of the cmakelists
+			get_filename_component(fileDir ${curFile} DIRECTORY)
+			list(APPEND PROJECT_DIRS ${fileDir})
+		ENDFOREACH()
+		#message("PROJECT_DIRS: ${PROJECT_DIRS}")		
+		add_custom_target(
+			UPDATE_RESOURCE
+			DEPENDS always_rebuild
+		)
+		
+		add_custom_command(
+			TARGET UPDATE_RESOURCE
+			PRE_BUILD
+			COMMAND ${CMAKE_COMMAND}
+			-DSrcDirs="${PROJECT_DIRS}"
+			-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
+			-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
+			COMMENT "Copying resource files to the binary output directory")
+
+		SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+		if( MSVC )
+			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER CMakePredefinedTargets)
+		else()
+			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER ZERO_CHECK/CMakePredefinedTargets)				
+		endif()
 	endif()
 ENDMACRO()
