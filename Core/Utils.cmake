@@ -247,11 +247,11 @@ MACRO(force_include_public_recursive compileFlags includeProj outString)
 			endif()
 		endforeach()
 	else()
+		#string(CONCAT ${outString} ${${outString}} "/* Not found */\n")
+	endif()
 
 	if(${${includeProj}_MODE} STREQUAL "DYNAMIC" OR ${${includeProj}_MODE} STREQUAL "SHARED")
 		string(CONCAT ${outString} ${${outString}} "\#include \"${includeProj}_API.generated.h\"\n")
-	endif
-		#string(CONCAT ${outString} ${${outString}} "/* Not found */\n")
 	endif()
 
 	#string(CONCAT ${outString} ${${outString}} "\n")
