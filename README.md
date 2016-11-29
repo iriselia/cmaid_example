@@ -12,4 +12,4 @@ This is a lazy, cross-platform build manager for C++ written in [CMake](http://w
 
 Sameple Program
 ---------------
-https://github.com/piaoasd123/PurifySampleProject
+https://github.com/fpark12/PurifySampleProject
