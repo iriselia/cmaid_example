@@ -116,6 +116,12 @@ macro(GeneratePrecompiledHeader)
 		string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* GENERATED HEADER FILE. DO NOT EDIT. */\n\n")
 		string(CONCAT generatedSourceContent ${generatedSourceContent} "/* GENERATED SOURCE FILE. DO NOT EDIT. */ \n\#include \"${generatedHeaderName}\"")
 		
+		# Add export api.h
+		if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
+		else()
+			string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* Symbol Export API */\n#include \"${PROJECT_NAME}_API.generated.h\"\n")
+		endif()
+
 		# Inherit pch
 		set(outCompileFlags "")
 		if(NOT "${${PROJECT_NAME}_RECURSIVE_INCLUDES}" STREQUAL "")
@@ -124,12 +130,6 @@ macro(GeneratePrecompiledHeader)
 			#message("After: ${generatedHeaderContent}")
 		else()
 			force_include_recursive(outCompileFlags "EMPTY" generatedHeaderContent)
-		endif()
-
-		# Add export api.h
-		if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
-		else()
-			string(CONCAT generatedHeaderContent ${generatedHeaderContent} "/* Symbol Export API */\n#include \"${PROJECT_NAME}_API.generated.h\"\n")
 		endif()
 
 		# Add user-defined precompiled header to generated precompiled header
@@ -194,6 +194,11 @@ MACRO(force_include_protected compileFlags includeProjs outString)
 		FOREACH(includeProj ${includeProjs})
 			string(CONCAT ${outString} ${${outString}} "/* ${includeProj}: */ \n")
 			if(NOT ${${includeProj}_PROTECTED_INCLUDE_FILES} STREQUAL "")
+
+				if(${${includeProj}_MODE} STREQUAL "DYNAMIC" OR ${${includeProj}_MODE} STREQUAL "SHARED")
+					string(CONCAT ${outString} ${${outString}} "\#include \"${includeProj}_API.generated.h\"\n")
+				endif()
+				
 				FOREACH(proFile ${${includeProj}_PROTECTED_INCLUDE_FILES})
 					FILE(RELATIVE_PATH folder ${${includeProj}_SOURCE_DIR_CACHED} ${proFile})
 					string(CONCAT ${outString} ${${outString}} "\#include \"${folder}\"\n")
@@ -226,6 +231,10 @@ MACRO(force_include_public_recursive compileFlags includeProj outString)
 
 	string(CONCAT ${outString} ${${outString}} "/* ${includeProj}: */ \n")
 
+	if(${${includeProj}_MODE} STREQUAL "DYNAMIC" OR ${${includeProj}_MODE} STREQUAL "SHARED")
+		string(CONCAT ${outString} ${${outString}} "\#include \"${includeProj}_API.generated.h\"\n")
+	endif()
+
 	if(NOT ${${includeProj}_PRECOMPILED_INCLUDE_FILES} STREQUAL "")
 		foreach(pubFile ${${includeProj}_PRECOMPILED_INCLUDE_FILES})
 			FILE(RELATIVE_PATH folder ${${includeProj}_SOURCE_DIR_CACHED} ${pubFile})
@@ -248,10 +257,6 @@ MACRO(force_include_public_recursive compileFlags includeProj outString)
 		endforeach()
 	else()
 		#string(CONCAT ${outString} ${${outString}} "/* Not found */\n")
-	endif()
-
-	if(${${includeProj}_MODE} STREQUAL "DYNAMIC" OR ${${includeProj}_MODE} STREQUAL "SHARED")
-		string(CONCAT ${outString} ${${outString}} "\#include \"${includeProj}_API.generated.h\"\n")
 	endif()
 
 	#string(CONCAT ${outString} ${${outString}} "\n")
