@@ -60,7 +60,9 @@ MACRO(create_build global_define )
 				list (APPEND CURRENT_INCLUDE_DIRS ${_dir})
 			endforeach()
 			list(REMOVE_DUPLICATES CURRENT_INCLUDE_DIRS)
-			list (APPEND CURRENT_INCLUDE_DIRS ${fileDir}/../)
+			#bad idea
+			#list (APPEND CURRENT_INCLUDE_DIRS ${fileDir}/../)
+
 			#include current include dirs and cache the content
 			unset(${PROJECT_NAME}_ALL_INCLUDE_DIRS CACHE)
 			# Recursive Include
