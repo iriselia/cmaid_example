@@ -106,7 +106,7 @@ MACRO(create_project mode defines includes links)
 
 				# make the project completely public if it does not contain a .pri.h
 				if( "${${currentName}_PRIVATE_INCLUDE_FILES}" STREQUAL "")
-					message("${currentName} has no file, ${${currentName}_ALL_INCLUDE_DIRS}")
+					#message("${currentName} has no file, ${${currentName}_ALL_INCLUDE_DIRS}")
 					list(APPEND includeDirs ${${currentName}_ALL_INCLUDE_DIRS} )
 				endif()
 				#message("${currentName} has : ${${currentName}_ALL_INCLUDE_DIRS} ")
