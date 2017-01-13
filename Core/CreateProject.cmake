@@ -207,7 +207,7 @@ MACRO(create_project mode defines includes links)
 			list(REMOVE_DUPLICATES includeDirs)
 		endif()
 		#message("${PROJECT_NAME}_ALL_INCLUDE_DIRS: ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
-		message("${PROJECT_NAME}_includeDirs: ${includeDirs}")
+		#message("${PROJECT_NAME}_includeDirs: ${includeDirs}")
 		target_include_directories(${PROJECT_NAME} PUBLIC "${includeDirs}" )
 
 		#----- Handle Links -----
