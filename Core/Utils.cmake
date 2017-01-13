@@ -231,7 +231,7 @@ MACRO(force_include_public_recursive compileFlags includeProj outString)
 
 	string(CONCAT ${outString} ${${outString}} "/* ${includeProj}: */ \n")
 
-	if(${${includeProj}_MODE} STREQUAL "DYNAMIC" OR ${${includeProj}_MODE} STREQUAL "SHARED")
+	if("${${includeProj}_MODE}" STREQUAL "DYNAMIC" OR "${${includeProj}_MODE}" STREQUAL "SHARED")
 		string(CONCAT ${outString} ${${outString}} "\#include \"${includeProj}_API.generated.h\"\n")
 	endif()
 
