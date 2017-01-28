@@ -145,7 +145,7 @@ macro(GeneratePrecompiledHeader)
 			# Add export api.h
 			if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
 			else()
-				string(CONCAT generatedHeaderHeader ${generatedHeaderHeader} "/* Symbol Export API */\n#include \"${PROJECT_NAME}_API.generated.h\"\n")
+				string(CONCAT generatedHeaderHeader ${generatedHeaderHeader} "/* Symbol Export API */\n#include \"${PROJECT_NAME}_API.generated.h\"\n\n")
 			endif()
 			
 			string(CONCAT generatedHeaderContent ${generatedHeaderHeader} ${generatedHeaderContent})
@@ -251,7 +251,7 @@ MACRO(forced_include_public compileFlags includeProjs outString)
 	endif()
 
 	if(outString2)
-		string(CONCAT ${outString} ${${outString}} "\n/* Public Headers */\n")
+		string(CONCAT ${outString} ${${outString}} "/* Public Headers */\n")
 		string(CONCAT ${outString} ${${outString}} ${outString2})
 	else()
 
