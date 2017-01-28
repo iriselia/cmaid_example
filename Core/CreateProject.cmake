@@ -22,18 +22,20 @@ MACRO(create_project mode defines includes links)
 
 	#----- Create Project -----
 	get_folder_name(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_NAME)
-	if(${PROJECT_NAME}_INITIALIZED)
+	if(NOT ${PROJECT_NAME}_INITIALIZED)
+		# First run
+		unset(${PROJECT_NAME}_FIRST_RUN CACHE)
+		unset(${PROJECT_NAME}_SECOND_RUN CACHE)
+		set(${PROJECT_NAME}_FIRST_RUN ON CACHE BOOL "")
+		set(${PROJECT_NAME}_SECOND_RUN OFF CACHE BOOL "")
+	else()
+		# Second run
 		project( ${PROJECT_NAME} )
 		
 		unset(${PROJECT_NAME}_FIRST_RUN CACHE)
 		unset(${PROJECT_NAME}_SECOND_RUN CACHE)
 		set(${PROJECT_NAME}_FIRST_RUN OFF CACHE BOOL "")
 		set(${PROJECT_NAME}_SECOND_RUN ON CACHE BOOL "")
-	else()
-		unset(${PROJECT_NAME}_FIRST_RUN CACHE)
-		unset(${PROJECT_NAME}_SECOND_RUN CACHE)
-		set(${PROJECT_NAME}_FIRST_RUN ON CACHE BOOL "")
-		set(${PROJECT_NAME}_SECOND_RUN OFF CACHE BOOL "")
 	endif()
 	
 	#----- Cache Call Params -----
@@ -47,6 +49,13 @@ MACRO(create_project mode defines includes links)
 	set(${PROJECT_NAME}_INCLUDES "${includes}" CACHE STRING "")
 	set(${PROJECT_NAME}_BUILD_TYPE "${PROJECT_NAME}_IS_${mode_capped}" CACHE STRING "")
 	set(${PROJECT_NAME}_ID "${PROJECT_COUNT}" CACHE STRING "")
+
+	GetIncludeProjectsRecursive(${PROJECT_NAME} ${PROJECT_NAME}_RECURSIVE_INCLUDES)
+	if(${PROJECT_NAME}_RECURSIVE_INCLUDES)
+		list(REMOVE_DUPLICATES ${PROJECT_NAME}_RECURSIVE_INCLUDES)
+	endif()
+	unset(${PROJECT_NAME}_RECURSIVE_INCLUDES CACHE)
+	set(${PROJECT_NAME}_RECURSIVE_INCLUDES "${${PROJECT_NAME}_RECURSIVE_INCLUDES}" CACHE STRING "")
 
 	if(NOT ${${PROJECT_NAME}_SECOND_RUN})
 
@@ -74,7 +83,6 @@ MACRO(create_project mode defines includes links)
 		
 		#------ INCLUDE DIRS AND LIBS -----
 		CreateVSProjectSettings() # From ProjectSettingsTemplate.cmake
-		GetIncludeProjectsRecursive(${PROJECT_NAME} ${PROJECT_NAME}_RECURSIVE_INCLUDES)
 		#message("New includes: ${${PROJECT_NAME}_RECURSIVE_INCLUDES}")
 		# Process include list, an element could be a list of dirs or a target name
 		set(includeDirs "")
