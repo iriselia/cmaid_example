@@ -28,11 +28,36 @@ MACRO(create_build global_define )
 	]]#
 
 	#find all cmakelists files
-	file(GLOB_RECURSE allProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
-	list(REMOVE_ITEM allProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
+	file(GLOB_RECURSE normalPriorityProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
+	list(REMOVE_ITEM normalPriorityProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
+
+	#Cache root directories of all projects
+	unset(CMAKE_ALL_PROJECT_DIRS CACHE)
+	set(CMAKE_ALL_PROJECT_DIRS "")
+	FOREACH(curFile ${normalPriorityProjects})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		list(APPEND CMAKE_ALL_PROJECT_DIRS ${fileDir})
+	ENDFOREACH()
+	#set(CMAKE_ALL_PROJECT_DIRS "${CMAKE_ALL_PROJECT_DIRS}" CACHE STRING "")
+
+	#Find out if there are high priority projects
+	FOREACH(curFile ${normalPriorityProjects})
+		#get the directory of the cmakelists
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} projName)
+		#assume it's protobuf if descriptor.pb.cc is present
+		file(GLOB_RECURSE protobufSource ${fileDir}/descriptor.pb.cc)
+		if(protobufSource)
+			list(REMOVE_ITEM normalPriorityProjects ${fileDir}/CMakeLists.txt)
+			list(APPEND highPriorityProjects ${fileDir}/CMakeLists.txt)
+			#message(STATUS "Build: high priority target: ${projName}")
+		else()
+			#message("not here:${protobufSource}")
+		endif()
+	ENDFOREACH()
 
 	#Pre-Configure cache include dirs prior to adding subdirectories
-	FOREACH(curFile ${allProjects})
+	FOREACH(curFile ${normalPriorityProjects})
 		#get the directory of the cmakelists
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 			
@@ -48,7 +73,11 @@ MACRO(create_build global_define )
 		unset(${PROJECT_NAME}_SOURCE_DIR_CACHED CACHE)
 		set(${PROJECT_NAME}_SOURCE_DIR_CACHED "${fileDir}" CACHE STRING "")
 		#----- All Headers -----
-		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.h ${fileDir}/*.hpp ${fileDir}/*.inl ${fileDir}/*.rc ${fileDir}/*.r ${fileDir}/*.resx)
+		FILE(RELATIVE_PATH relPath ${CMAKE_SOURCE_DIR} ${fileDir})
+		set(buildPath "${CMAKE_BINARY_DIR}/${relPath}")
+		#message("buildPath: ${buildPath}")
+
+		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.h ${fileDir}/*.hpp ${fileDir}/*.inl ${fileDir}/*.rc ${fileDir}/*.r ${fileDir}/*.resx ${buildPath}/*.pb.h)
 		if( NOT MY_HEADERS STREQUAL "" )
 			create_source_group("" "${fileDir}/" ${MY_HEADERS})
 			#remove duplicates and parse directories
@@ -152,20 +181,61 @@ MACRO(create_build global_define )
 			unset(${PROJECT_NAME}_PUBLIC_INCLUDE_FILES CACHE)
 			set(${PROJECT_NAME}_PUBLIC_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
 		endif()
-	ENDFOREACH(curFile ${allProjects})
+	ENDFOREACH(curFile ${normalPriorityProjects})
 
 	SET(PROJECT_COUNT 0)
 
-	FOREACH(curFile ${allProjects})
+	FOREACH(curFile ${normalPriorityProjects})
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 		get_folder_name(${fileDir} PROJECT_NAME)
-		set(new_project_names "${PROJECT_NAMES};${PROJECT_NAME}")
-		unset(PROJECT_NAMES CACHE)
-		set(PROJECT_NAMES "${new_project_names}" CACHE STRING "")
+		set(new_project_names "${new_project_names};${PROJECT_NAME}")
 	ENDFOREACH()
+	FOREACH(curFile ${highPriorityProjects})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} PROJECT_NAME)
+		set(new_project_names "${new_project_names};${PROJECT_NAME}")
+	ENDFOREACH()
+	unset(PROJECT_NAMES CACHE)
+	set(PROJECT_NAMES "${new_project_names}" CACHE STRING "")
 
 	#Include sub directories now
-	FOREACH(curFile ${allProjects})
+	IncludeProjects(highPriorityProjects)
+	IncludeProjects(normalPriorityProjects)
+
+	if(NOT SecondBuild)
+		message("Purify only initializes cache on the first build. Configure and generate again to complete the generation process.")
+	else()
+		FOREACH(curFile ${${normalPriorityProjects}})
+			#get the directory of the cmakelists
+			get_filename_component(fileDir ${curFile} DIRECTORY)
+			list(APPEND PROJECT_DIRS ${fileDir})
+		ENDFOREACH()
+		#message("PROJECT_DIRS: ${PROJECT_DIRS}")		
+		add_custom_target(
+			UPDATE_RESOURCE
+			DEPENDS always_rebuild
+		)
+		
+		add_custom_command(
+			TARGET UPDATE_RESOURCE
+			PRE_BUILD
+			COMMAND ${CMAKE_COMMAND}
+			-DSrcDirs="${PROJECT_DIRS}"
+			-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
+			-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
+			COMMENT "Copying resource files to the binary output directory")
+
+		SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+		if( MSVC )
+			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER CMakePredefinedTargets)
+		else()
+			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER ZERO_CHECK/CMakePredefinedTargets)				
+		endif()
+	endif()
+ENDMACRO()
+
+MACRO(IncludeProjects normalPriorityProjects)
+	FOREACH(curFile ${${normalPriorityProjects}})
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 		get_folder_name(${fileDir} PROJECT_NAME)
 
@@ -206,45 +276,15 @@ MACRO(create_build global_define )
 			message(STATUS " *   ${pName}")
 			set( PreviousFolder ${newFolder} )
 		endif()
-	ENDFOREACH(curFile ${allProjects})
+	ENDFOREACH(curFile ${${normalPriorityProjects}})
 
-	FOREACH(curFile ${allProjects})
+	FOREACH(curFile ${${normalPriorityProjects}})
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 		get_folder_name(${fileDir} PROJECT_NAME)
 
 		#post_create process, note that this is completely different from creating a new project.
 		#everything should have been created here, except we need to link the libraries.
 		#add_subdirectory( ${fileDir} )
-	ENDFOREACH(curFile ${allProjects})
+	ENDFOREACH(curFile ${${normalPriorityProjects}})
 
-	if(NOT SecondBuild)
-		message("Purify only initializes cache on the first build. Configure and generate again to complete the generation process.")
-	else()
-		FOREACH(curFile ${allProjects})
-			#get the directory of the cmakelists
-			get_filename_component(fileDir ${curFile} DIRECTORY)
-			list(APPEND PROJECT_DIRS ${fileDir})
-		ENDFOREACH()
-		#message("PROJECT_DIRS: ${PROJECT_DIRS}")		
-		add_custom_target(
-			UPDATE_RESOURCE
-			DEPENDS always_rebuild
-		)
-		
-		add_custom_command(
-			TARGET UPDATE_RESOURCE
-			PRE_BUILD
-			COMMAND ${CMAKE_COMMAND}
-			-DSrcDirs="${PROJECT_DIRS}"
-			-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
-			-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
-			COMMENT "Copying resource files to the binary output directory")
-
-		SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-		if( MSVC )
-			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER CMakePredefinedTargets)
-		else()
-			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER ZERO_CHECK/CMakePredefinedTargets)				
-		endif()
-	endif()
 ENDMACRO()

@@ -92,6 +92,7 @@ MACRO(create_project mode defines includes links)
 		list(APPEND includeDirs ${${PROJECT_NAME}_PUBLIC_INCLUDE_DIRS})
 		list(APPEND includeDirs ${${PROJECT_NAME}_PROTECTED_INCLUDE_DIRS})
 		list(APPEND includeDirs ${${PROJECT_NAME}_PRIVATE_INCLUDE_DIRS})
+		list(APPEND includeDirs ${${PROJECT_NAME}_PRECOMPILED_INCLUDE_DIRS})
 		# make the project completely public if it does not contain a .pri.h
 		if( "${${PROJECT_NAME}_PRIVATE_INCLUDE_FILES}" STREQUAL "")
 			#message("${PROJECT_NAME} has no file, ${${currentName}_ALL_INCLUDE_DIRS}")
@@ -100,22 +101,26 @@ MACRO(create_project mode defines includes links)
 
 		FOREACH(currentName ${${PROJECT_NAME}_RECURSIVE_INCLUDES})
 			if(EXISTS ${currentName})
-				# if exists, it is a directory
+				# if exists, it is a directory, like c:/github/project/library/libabcd
 				list(APPEND includeDirs ${currentName})
 			elseif(EXISTS ${CMAKE_SOURCE_DIR}/${currentName})
-				# or if it exists in the cmake source dir, it is a relative path
+				# or if it exists in the cmake source dir, it is a relative path, e.g. /library/libabcd
 				list(APPEND includeDirs ${CMAKE_SOURCE_DIR}/${currentName})
 			else()
 				# if doesn't exist, it is a target, we retrieve the include dirs by appending _INCLUDE_DIRS to its name
 				list(APPEND includeDirs ${${currentName}_PUBLIC_INCLUDE_DIRS})
 				list(APPEND includeDirs ${${currentName}_PROTECTED_INCLUDE_DIRS})
 				list(APPEND includeDirs ${${currentName}_PRIVATE_INCLUDE_DIRS})
+				list(APPEND includeDirs ${${currentName}_PRECOMPILED_INCLUDE_DIRS})
 				#message("${currentName}_PRECOMPILED_INCLUDE_FILES: ${${currentName}_PRECOMPILED_INCLUDE_FILES}")
 
+				# include the bare minimum
+				list(APPEND includeDirs ${${currentName}_SOURCE_DIR} )
 				# make the project completely public if it does not contain a .pri.h
 				if( "${${currentName}_PRIVATE_INCLUDE_FILES}" STREQUAL "")
 					#message("${currentName} has no file, ${${currentName}_ALL_INCLUDE_DIRS}")
 					list(APPEND includeDirs ${${currentName}_ALL_INCLUDE_DIRS} )
+				else()
 				endif()
 				#message("${currentName} has : ${${currentName}_ALL_INCLUDE_DIRS} ")
 				foreach(define ${${currentName}_DEFINES})
