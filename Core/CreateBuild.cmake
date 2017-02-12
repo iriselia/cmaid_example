@@ -203,7 +203,7 @@ MACRO(create_build global_define )
 	IncludeProjects(normalPriorityProjects)
 
 	if(NOT SecondBuild)
-		message("Purify only initializes cache on the first build. Configure and generate again to complete the generation process.")
+		message("Purify only initializes cache on the first build. Click generate again to complete the generation process.")
 	else()
 		FOREACH(curFile ${${normalPriorityProjects}})
 			#get the directory of the cmakelists
@@ -234,8 +234,8 @@ MACRO(create_build global_define )
 	endif()
 ENDMACRO()
 
-MACRO(IncludeProjects normalPriorityProjects)
-	FOREACH(curFile ${${normalPriorityProjects}})
+MACRO(IncludeProjects projects)
+	FOREACH(curFile ${${projects}})
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 		get_folder_name(${fileDir} PROJECT_NAME)
 
@@ -243,12 +243,11 @@ MACRO(IncludeProjects normalPriorityProjects)
 		add_subdirectory( ${fileDir} )
 		
 		if(NOT ${PROJECT_NAME}_INITIALIZED)
+			set(SecondBuild false)
 			set(${PROJECT_NAME}_INITIALIZED ON CACHE BOOL "")
-		endif()
-
-		if(${PROJECT_NAME}_INITIALIZED)
+		else()
 			set(SecondBuild true)
-			
+
 			if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
 			else()
 				CONFIGURE_FILE(${CMAKE_MODULE_PATH}/Core/SymbolExportAPITemplate.template ${${PROJECT_NAME}_BINARY_DIR}/${PROJECT_NAME}_API.generated.h @ONLY)
@@ -276,15 +275,16 @@ MACRO(IncludeProjects normalPriorityProjects)
 			message(STATUS " *   ${pName}")
 			set( PreviousFolder ${newFolder} )
 		endif()
-	ENDFOREACH(curFile ${${normalPriorityProjects}})
 
-	FOREACH(curFile ${${normalPriorityProjects}})
+	ENDFOREACH(curFile ${${projects}})
+
+	FOREACH(curFile ${${projects}})
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 		get_folder_name(${fileDir} PROJECT_NAME)
 
 		#post_create process, note that this is completely different from creating a new project.
 		#everything should have been created here, except we need to link the libraries.
 		#add_subdirectory( ${fileDir} )
-	ENDFOREACH(curFile ${${normalPriorityProjects}})
+	ENDFOREACH(curFile ${${projects}})
 
 ENDMACRO()
