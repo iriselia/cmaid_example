@@ -401,15 +401,11 @@ MACRO(create_project mode defines includes links)
 		endif()
 
 		#install(SCRIPT ${CMAKE_MODULE_PATH}/Core/Install.cmake)
-
-		if(${PROJECT_NAME}_INITIALIZED)
-			#unset(${PROJECT_NAME}_INITIALIZED CACHE)
-		endif()
 	endif()
 ENDMACRO(create_project mode linLibraries)
 
 MACRO(post_create_project mode defines includes links)
-
+	message("DEPRECATED")
 	FOREACH(curFile ${allProjects})
 		if(${PROJECT_NAME}_INITIALIZED)
 			get_filename_component(fileDir ${curFile} DIRECTORY)

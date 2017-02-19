@@ -203,8 +203,28 @@ MACRO(create_build global_define )
 	IncludeProjects(normalPriorityProjects)
 
 	if(NOT SecondBuild)
-		message("Purify only initializes cache on the first build. Click generate again to complete the generation process.")
+		message("First pass completed...\n")
 	else()
+		# we loop thru stage 1 and stage 2 back and forth, so after each successful completion
+		# we reset the project to rescan everything
+		FOREACH(curFile ${highPriorityProjects})
+			get_filename_component(fileDir ${curFile} DIRECTORY)
+			get_folder_name(${fileDir} PROJECT_NAME)
+			unset(${PROJECT_NAME}_INITIALIZED CACHE)
+		ENDFOREACH()
+
+		FOREACH(curFile ${normalPriorityProjects})
+			get_filename_component(fileDir ${curFile} DIRECTORY)
+			get_folder_name(${fileDir} PROJECT_NAME)
+			unset(${PROJECT_NAME}_INITIALIZED CACHE)
+		ENDFOREACH()
+		
+		FOREACH(curFile ${${highPriorityProjects}})
+			#get the directory of the cmakelists
+			get_filename_component(fileDir ${curFile} DIRECTORY)
+			list(APPEND PROJECT_DIRS ${fileDir})
+		ENDFOREACH()
+
 		FOREACH(curFile ${${normalPriorityProjects}})
 			#get the directory of the cmakelists
 			get_filename_component(fileDir ${curFile} DIRECTORY)
@@ -244,6 +264,7 @@ MACRO(IncludeProjects projects)
 		
 		if(NOT ${PROJECT_NAME}_INITIALIZED)
 			set(SecondBuild false)
+			unset(${PROJECT_NAME}_INITIALIZED CACHE)
 			set(${PROJECT_NAME}_INITIALIZED ON CACHE BOOL "")
 		else()
 			set(SecondBuild true)
