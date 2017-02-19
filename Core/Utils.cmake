@@ -207,12 +207,16 @@ MACRO(forced_include_public compileFlags includeProjs outString)
 			#message("${includeProj}_PUBLIC_INCLUDE_FILES: ${${includeProj}_PUBLIC_INCLUDE_FILES}")
 			if(NOT ${${includeProj}_PRECOMPILED_INCLUDE_FILES} STREQUAL ""
 				OR NOT ${${includeProj}_PUBLIC_INCLUDE_FILES} STREQUAL ""
-				OR "${${includeProj}_MODE}" STREQUAL "DYNAMIC" OR "${${includeProj}_MODE}" STREQUAL "SHARED"
+				OR "${${includeProj}_MODE}" STREQUAL "DYNAMIC"
+				OR "${${includeProj}_MODE}" STREQUAL "SHARED"
+				OR "${${includeProj}_MODE}" STREQUAL "STATIC"
 				)
 				string(CONCAT outString2 ${outString2} "/* ${includeProj}: */ \n")
 			endif()
 
-			if("${${includeProj}_MODE}" STREQUAL "DYNAMIC" OR "${${includeProj}_MODE}" STREQUAL "SHARED")
+			if("${${includeProj}_MODE}" STREQUAL "DYNAMIC"
+				OR "${${includeProj}_MODE}" STREQUAL "SHARED"
+				OR "${${includeProj}_MODE}" STREQUAL "STATIC")
 				string(CONCAT outString2 ${outString2} "\#include \"${includeProj}_API.generated.h\"\n")
 			endif()
 
@@ -516,10 +520,14 @@ macro(GetIncludeProjectsRecursive inString outString)
 	#only iterate if it's not a directory (which probably means it's a target)
 	if(NOT EXISTS ${inString})
 		foreach(proj ${${inString}_INCLUDES})
-			GetIncludeProjectsRecursive(${proj} ${outString})
+			list(FIND ${outString} ${proj} index)
+			if(index EQUAL -1)
+				#message("${PROJECT_NAME} B")
+				GetIncludeProjectsRecursive(${proj} ${outString})
+				list(APPEND ${outString} ${proj})
+			endif()
 			#only append if it's not a directory (which probably means it's a target)
 			#if(NOT EXISTS ${proj})
-			list(APPEND ${outString} ${proj})
 			#endif()
 		endforeach()
 	endif()
