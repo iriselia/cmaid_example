@@ -2,6 +2,13 @@ cmake_minimum_required( VERSION 2.8 )
 cmake_policy(SET CMP0054 NEW)
 
 MACRO(create_build global_define )
+
+	if(CMAKE_BUILD_FLAG STREQUAL "LITE")
+		#message("CMAKE_BUILD_FLAG: ${CMAKE_BUILD_FLAG} REBUILD")
+	else()
+		#message("CMAKE_BUILD_FLAG: ${CMAKE_BUILD_FLAG} REBUILD")
+	endif()
+
 	unset(PROJECT_NAMES CACHE)
 	set(PROJECT_NAMES "" CACHE STRING "")
 	unset(FIRST_BUILD CACHE)
@@ -61,7 +68,6 @@ MACRO(create_build global_define )
 		#get the directory of the cmakelists
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 			
-		# Pre-Pre-Configure Processing
 		# Source file update and generation (flex and bison, github)
 		# Flex and Bison
 		if( USE_FLEX_AND_BISON )
@@ -93,9 +99,9 @@ MACRO(create_build global_define )
 			#list (APPEND CURRENT_INCLUDE_DIRS ${fileDir}/../)
 
 			#include current include dirs and cache the content
-			unset(${PROJECT_NAME}_ALL_INCLUDE_DIRS CACHE)
+			unset(${PROJECT_NAME}_INCLUDE_DIRS CACHE)
 			# Recursive Include
-			set(${PROJECT_NAME}_ALL_INCLUDE_DIRS "${CURRENT_INCLUDE_DIRS}" CACHE STRING "")
+			set(${PROJECT_NAME}_INCLUDE_DIRS "${CURRENT_INCLUDE_DIRS}" CACHE STRING "")
 			# Project Dir only Include
 			#set(${PROJECT_NAME}_ALL_INCLUDE_DIRS "${${PROJECT_NAME}_SOURCE_DIR_CACHED}" CACHE STRING "")
 
@@ -201,56 +207,54 @@ MACRO(create_build global_define )
 	#Include sub directories now
 	IncludeProjects(highPriorityProjects)
 	IncludeProjects(normalPriorityProjects)
+	AddSubdirectories(highPriorityProjects)
+	AddSubdirectories(normalPriorityProjects)
+	
+	# we loop thru stage 1 and stage 2 back and forth, so after each successful completion
+	# we reset the project to rescan everything
+	FOREACH(curFile ${highPriorityProjects})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} PROJECT_NAME)
+		unset(${PROJECT_NAME}_INITIALIZED CACHE)
+	ENDFOREACH()
 
-	if(NOT SecondBuild)
-		message("First pass completed...\n")
+	FOREACH(curFile ${normalPriorityProjects})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} PROJECT_NAME)
+		unset(${PROJECT_NAME}_INITIALIZED CACHE)
+	ENDFOREACH()
+	
+	FOREACH(curFile ${${highPriorityProjects}})
+		#get the directory of the cmakelists
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		list(APPEND PROJECT_DIRS ${fileDir})
+	ENDFOREACH()
+
+	FOREACH(curFile ${${normalPriorityProjects}})
+		#get the directory of the cmakelists
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		list(APPEND PROJECT_DIRS ${fileDir})
+	ENDFOREACH()
+	#message("PROJECT_DIRS: ${PROJECT_DIRS}")		
+	add_custom_target(
+		UPDATE_RESOURCE
+		DEPENDS always_rebuild
+	)
+	
+	add_custom_command(
+		TARGET UPDATE_RESOURCE
+		PRE_BUILD
+		COMMAND ${CMAKE_COMMAND}
+		-DSrcDirs="${PROJECT_DIRS}"
+		-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
+		-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
+		COMMENT "Copying resource files to the binary output directory")
+
+	SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+	if( MSVC )
+		SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER CMakePredefinedTargets)
 	else()
-		# we loop thru stage 1 and stage 2 back and forth, so after each successful completion
-		# we reset the project to rescan everything
-		FOREACH(curFile ${highPriorityProjects})
-			get_filename_component(fileDir ${curFile} DIRECTORY)
-			get_folder_name(${fileDir} PROJECT_NAME)
-			unset(${PROJECT_NAME}_INITIALIZED CACHE)
-		ENDFOREACH()
-
-		FOREACH(curFile ${normalPriorityProjects})
-			get_filename_component(fileDir ${curFile} DIRECTORY)
-			get_folder_name(${fileDir} PROJECT_NAME)
-			unset(${PROJECT_NAME}_INITIALIZED CACHE)
-		ENDFOREACH()
-		
-		FOREACH(curFile ${${highPriorityProjects}})
-			#get the directory of the cmakelists
-			get_filename_component(fileDir ${curFile} DIRECTORY)
-			list(APPEND PROJECT_DIRS ${fileDir})
-		ENDFOREACH()
-
-		FOREACH(curFile ${${normalPriorityProjects}})
-			#get the directory of the cmakelists
-			get_filename_component(fileDir ${curFile} DIRECTORY)
-			list(APPEND PROJECT_DIRS ${fileDir})
-		ENDFOREACH()
-		#message("PROJECT_DIRS: ${PROJECT_DIRS}")		
-		add_custom_target(
-			UPDATE_RESOURCE
-			DEPENDS always_rebuild
-		)
-		
-		add_custom_command(
-			TARGET UPDATE_RESOURCE
-			PRE_BUILD
-			COMMAND ${CMAKE_COMMAND}
-			-DSrcDirs="${PROJECT_DIRS}"
-			-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
-			-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
-			COMMENT "Copying resource files to the binary output directory")
-
-		SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-		if( MSVC )
-			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER CMakePredefinedTargets)
-		else()
-			SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER ZERO_CHECK/CMakePredefinedTargets)				
-		endif()
+		SET_PROPERTY(TARGET UPDATE_RESOURCE		PROPERTY FOLDER ZERO_CHECK/CMakePredefinedTargets)				
 	endif()
 ENDMACRO()
 
@@ -260,14 +264,52 @@ MACRO(IncludeProjects projects)
 		get_folder_name(${fileDir} PROJECT_NAME)
 
 		#create_project: CreateProject.cmake on fileDir
+		set(${PROJECT_NAME}_INITIALIZED OFF)
+
+		string(LENGTH ${CMAKE_SOURCE_DIR} firDirStrSize)
+		string(SUBSTRING ${fileDir} ${firDirStrSize} -1 protoFileDirSubStr)
+		set(${PROJECT_NAME}_SOURCE_DIR "${fileDir}")
+		set(${PROJECT_NAME}_BINARY_DIR "${CMAKE_BINARY_DIR}${protoFileDirSubStr}")
+
+		# Most important step!
+		if(NOT CMAKE_BUILD_FLAG STREQUAL "LITE")
+		include(${curFile})
+		endif()
+
+		set(${PROJECT_NAME}_INITIALIZED ON)
+
+	ENDFOREACH(curFile ${${projects}})
+
+	FOREACH(curFile ${${projects}})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} PROJECT_NAME)
+
+		#post_create process, note that this is completely different from creating a new project.
+		#everything should have been created here, except we need to link the libraries.
+		#add_subdirectory( ${fileDir} )
+	ENDFOREACH(curFile ${${projects}})
+
+ENDMACRO()
+
+MACRO(AddSubdirectories projects)
+
+	FOREACH(curFile ${${projects}})
+		get_filename_component(fileDir ${curFile} DIRECTORY)
+		get_folder_name(${fileDir} PROJECT_NAME)
+
+		#create_project: CreateProject.cmake on fileDir
+		#unset(${CMAKE_CURRENT_SOURCE_DIR} CACHE)
+
+		string(LENGTH ${CMAKE_SOURCE_DIR} firDirStrSize)
+		string(SUBSTRING ${fileDir} ${firDirStrSize} -1 protoFileDirSubStr)
+
+		# Most important step!
 		add_subdirectory( ${fileDir} )
 		
 		if(NOT ${PROJECT_NAME}_INITIALIZED)
-			set(SecondBuild false)
-			unset(${PROJECT_NAME}_INITIALIZED CACHE)
-			set(${PROJECT_NAME}_INITIALIZED ON CACHE BOOL "")
+			#unset(${PROJECT_NAME}_INITIALIZED CACHE)
+			set(${PROJECT_NAME}_INITIALIZED ON)
 		else()
-			set(SecondBuild true)
 
 			if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
 			else()
@@ -298,14 +340,4 @@ MACRO(IncludeProjects projects)
 		endif()
 
 	ENDFOREACH(curFile ${${projects}})
-
-	FOREACH(curFile ${${projects}})
-		get_filename_component(fileDir ${curFile} DIRECTORY)
-		get_folder_name(${fileDir} PROJECT_NAME)
-
-		#post_create process, note that this is completely different from creating a new project.
-		#everything should have been created here, except we need to link the libraries.
-		#add_subdirectory( ${fileDir} )
-	ENDFOREACH(curFile ${${projects}})
-
 ENDMACRO()

@@ -79,6 +79,7 @@ endfunction()
 #
 macro(GeneratePrecompiledHeader)
 		#----- Mark PRECOMPILED HEADER -----
+		#message("PROJECT NAME IS: ${PROJECT_NAME}")
 		if( NOT ${${PROJECT_NAME}_PRECOMPILED_HEADER} STREQUAL "")
 			#IF(MSVC)
 				GET_FILENAME_COMPONENT(PRECOMPILED_HEADER_NAME ${${PROJECT_NAME}_PRECOMPILED_HEADER} NAME)
@@ -95,10 +96,10 @@ macro(GeneratePrecompiledHeader)
 		set(generatedHeaderContent "")
 		# Inherit pch
 		set(outCompileFlags "")
-		if(NOT "${${PROJECT_NAME}_RECURSIVE_INCLUDES}" STREQUAL "")
+		if(NOT "${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS}" STREQUAL "")
 			#(STATUS "Before: ${PROJECT_NAME}, includes ${includeProjs}")
 				#forced_include_protected(${compileFlags} "${includeProjs}" generatedHeaderHeader)
-				forced_include_public(compileFlags ${PROJECT_NAME}_RECURSIVE_INCLUDES generatedHeaderContent)
+				forced_include_public(compileFlags ${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS generatedHeaderContent)
 			#forced_include_recursive(outCompileFlags "${includeProjs}" generatedHeaderHeader)
 			#message("After: ${generatedHeaderHeader}")
 		else()
@@ -415,38 +416,38 @@ ENDMACRO()
 macro(ScanSourceFiles)
 		#file(GLOB ${PROJECT_NAME}_BATCH_SCRIPTS ${CMAKE_SOURCE_DIR}/*Generate*.bat)
 		file(GLOB_RECURSE ${PROJECT_NAME}_SRC
-			${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc
-			${CMAKE_CURRENT_SOURCE_DIR}/*.c++ ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
-		file(GLOB_RECURSE ${PROJECT_NAME}_CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-			${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c++)
-		file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.inl)
-		file(GLOB_RECURSE ${PROJECT_NAME}_PRECOMPILED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/*.pch.h)
+			${${PROJECT_NAME}_SOURCE_DIR}/*.cxx ${${PROJECT_NAME}_SOURCE_DIR}/*.cpp ${${PROJECT_NAME}_SOURCE_DIR}/*.cc
+			${${PROJECT_NAME}_SOURCE_DIR}/*.c++ ${${PROJECT_NAME}_SOURCE_DIR}/*.c)
+		file(GLOB_RECURSE ${PROJECT_NAME}_CPP_SRC ${${PROJECT_NAME}_SOURCE_DIR}/*.cxx ${${PROJECT_NAME}_SOURCE_DIR}/*.cpp
+			${${PROJECT_NAME}_SOURCE_DIR}/*.cc ${${PROJECT_NAME}_SOURCE_DIR}/*.c++)
+		file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS ${${PROJECT_NAME}_SOURCE_DIR}/*.h ${${PROJECT_NAME}_SOURCE_DIR}/*.hpp ${${PROJECT_NAME}_SOURCE_DIR}/*.inl)
+		file(GLOB_RECURSE ${PROJECT_NAME}_PRECOMPILED_HEADER ${${PROJECT_NAME}_SOURCE_DIR}/*.pch.h)
 		file(GLOB_RECURSE ${PROJECT_NAME}_GENERATED_PRECOMPILED_HEADER ${${PROJECT_NAME}_BINARY_DIR}/*.pch.h)
 		
-		file(GLOB_RECURSE ${PROJECT_NAME}_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.rc ${CMAKE_CURRENT_SOURCE_DIR}/*.r ${CMAKE_CURRENT_SOURCE_DIR}/*.resx)
-		# Todo: Add support for ${CMAKE_CURRENT_SOURCE_DIR}/*.capnp
-		file(GLOB_RECURSE ${PROJECT_NAME}_PROTO ${CMAKE_CURRENT_SOURCE_DIR}/*.proto)
+		file(GLOB_RECURSE ${PROJECT_NAME}_RESOURCES ${${PROJECT_NAME}_SOURCE_DIR}/*.rc ${${PROJECT_NAME}_SOURCE_DIR}/*.r ${${PROJECT_NAME}_SOURCE_DIR}/*.resx)
+		# Todo: Add support for ${${PROJECT_NAME}_SOURCE_DIR}/*.capnp
+		file(GLOB_RECURSE ${PROJECT_NAME}_PROTO ${${PROJECT_NAME}_SOURCE_DIR}/*.proto)
 		file(GLOB_RECURSE ${PROJECT_NAME}_PROTO_SRC ${${PROJECT_NAME}_BINARY_DIR}/*.pb.cc)
 		file(GLOB_RECURSE ${PROJECT_NAME}_PROTO_HEADERS ${${PROJECT_NAME}_BINARY_DIR}/*.pb.h)
 
-		file(GLOB_RECURSE ${PROJECT_NAME}_MISC ${CMAKE_CURRENT_SOURCE_DIR}/*.l ${CMAKE_CURRENT_SOURCE_DIR}/*.y)
-		file(GLOB_RECURSE ${PROJECT_NAME}_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/*.ini)
+		file(GLOB_RECURSE ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_SOURCE_DIR}/*.l ${${PROJECT_NAME}_SOURCE_DIR}/*.y)
+		file(GLOB_RECURSE ${PROJECT_NAME}_CONFIG ${${PROJECT_NAME}_SOURCE_DIR}/*.ini)
 		file(GLOB_RECURSE ${PROJECT_NAME}_SHADERS
-			${CMAKE_CURRENT_SOURCE_DIR}/*.vert
-			${CMAKE_CURRENT_SOURCE_DIR}/*.frag
-			${CMAKE_CURRENT_SOURCE_DIR}/*.geom
-			${CMAKE_CURRENT_SOURCE_DIR}/*.ctrl
-			${CMAKE_CURRENT_SOURCE_DIR}/*.eval
-			${CMAKE_CURRENT_SOURCE_DIR}/*.glsl)
+			${${PROJECT_NAME}_SOURCE_DIR}/*.vert
+			${${PROJECT_NAME}_SOURCE_DIR}/*.frag
+			${${PROJECT_NAME}_SOURCE_DIR}/*.geom
+			${${PROJECT_NAME}_SOURCE_DIR}/*.ctrl
+			${${PROJECT_NAME}_SOURCE_DIR}/*.eval
+			${${PROJECT_NAME}_SOURCE_DIR}/*.glsl)
 
 		if( NOT ${PROJECT_NAME}_HEADERS STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_HEADERS)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_HEADERS)
 		endif()
 		if( NOT ${PROJECT_NAME}_SRC STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_SRC)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_SRC)
 		endif()
 		if( NOT ${PROJECT_NAME}_CPP_SRC STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_CPP_SRC)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_CPP_SRC)
 		endif()
 
 		# Append proto source files
@@ -463,9 +464,9 @@ macro(ScanSourceFiles)
 
 
 		if( NOT ${PROJECT_NAME}_RESOURCES STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_RESOURCES)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_RESOURCES)
 			foreach(RESOURCE ${${PROJECT_NAME}_RESOURCES})
-				FILE(RELATIVE_PATH folder ${CMAKE_CURRENT_SOURCE_DIR} ${RESOURCE})
+				FILE(RELATIVE_PATH folder ${${PROJECT_NAME}_SOURCE_DIR} ${RESOURCE})
 				string(FIND ${folder} "/" result)
 				if(${result} STREQUAL "-1")
 					SOURCE_GROUP("Resource Files" FILES ${RESOURCES})
@@ -480,13 +481,13 @@ macro(ScanSourceFiles)
 			create_source_group("" "${${PROJECT_NAME}_BINARY_DIR}/" ${PROJECT_NAME}_PROTO_HEADERS)
 		endif()
 		if( NOT ${PROJECT_NAME}_PROTO STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_PROTO)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_PROTO)
 		endif()
 
 		LIST(APPEND ${PROJECT_NAME}_RESOURCES ${${PROJECT_NAME}_CONFIG})
 
 		if( NOT ${PROJECT_NAME}_CONFIG STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_CONFIG)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_CONFIG)
 		endif()
 
 		if( NOT ${PROJECT_NAME}_BATCH_SCRIPTS STREQUAL "" )
@@ -494,7 +495,7 @@ macro(ScanSourceFiles)
 		endif()
 
 		if( NOT ${PROJECT_NAME}_MISC STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_MISC)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_MISC)
 		endif()
 
 		LIST(APPEND ${PROJECT_NAME}_MISC ${${PROJECT_NAME}_PROTO})
@@ -509,7 +510,7 @@ macro(ScanSourceFiles)
 
 
 		if( NOT ${PROJECT_NAME}_SHADERS STREQUAL "" )
-			create_source_group("" "${CMAKE_CURRENT_SOURCE_DIR}/" ${PROJECT_NAME}_SHADERS)
+			create_source_group("" "${${PROJECT_NAME}_SOURCE_DIR}/" ${PROJECT_NAME}_SHADERS)
 		endif()
 endmacro()
 

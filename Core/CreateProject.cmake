@@ -21,7 +21,7 @@ MACRO(create_project mode defines includes links)
 	endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 	#----- Create Project -----
-	get_folder_name(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_NAME)
+	get_folder_name(${${PROJECT_NAME}_SOURCE_DIR} PROJECT_NAME)
 	if(NOT ${PROJECT_NAME}_INITIALIZED)
 		# First run
 		unset(${PROJECT_NAME}_FIRST_RUN CACHE)
@@ -50,24 +50,16 @@ MACRO(create_project mode defines includes links)
 	set(${PROJECT_NAME}_BUILD_TYPE "${PROJECT_NAME}_IS_${mode_capped}" CACHE STRING "")
 	set(${PROJECT_NAME}_ID "${PROJECT_COUNT}" CACHE STRING "")
 
-	GetIncludeProjectsRecursive(${PROJECT_NAME} ${PROJECT_NAME}_RECURSIVE_INCLUDES)
-	if(${PROJECT_NAME}_RECURSIVE_INCLUDES)
-		list(REMOVE_DUPLICATES ${PROJECT_NAME}_RECURSIVE_INCLUDES)
-	endif()
-	unset(${PROJECT_NAME}_RECURSIVE_INCLUDES CACHE)
-	set(${PROJECT_NAME}_RECURSIVE_INCLUDES "${${PROJECT_NAME}_RECURSIVE_INCLUDES}" CACHE STRING "")
+	GetIncludeProjectsRecursive(${PROJECT_NAME} ${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS)
+	unset(${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS CACHE)
+	set(${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS "${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS}" CACHE STRING "")
 
-	if(NOT ${${PROJECT_NAME}_SECOND_RUN})
-
-		set(${PROJECT_NAME}_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "")
-		set(${PROJECT_NAME}_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" CACHE STRING "")
 		#----- SCAN SOURCE -----
 		#----- Scan Shader Files -----
 
-	endif()
 
 	#----- The follow code will only be executed if build project is being run a second time -----
-	if( ${PROJECT_NAME}_SECOND_RUN )
+	if( ${PROJECT_NAME}_INITIALIZED )
 		#message("Building: ${PROJECT_NAME}")
 		#----- Add Preprocessor Definitions -----
 		foreach(currMacro ${defines})
@@ -83,7 +75,7 @@ MACRO(create_project mode defines includes links)
 		
 		#------ INCLUDE DIRS AND LIBS -----
 		CreateVSProjectSettings() # From ProjectSettingsTemplate.cmake
-		#message("New includes: ${${PROJECT_NAME}_RECURSIVE_INCLUDES}")
+		#message("New includes: ${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS}")
 		# Process include list, an element could be a list of dirs or a target name
 		set(includeDirs "")
 		set(includeProjs "")
@@ -96,10 +88,10 @@ MACRO(create_project mode defines includes links)
 		# make the project completely public if it does not contain a .pri.h
 		if( "${${PROJECT_NAME}_PRIVATE_INCLUDE_FILES}" STREQUAL "")
 			#message("${PROJECT_NAME} has no file, ${${currentName}_ALL_INCLUDE_DIRS}")
-			list(APPEND includeDirs ${${PROJECT_NAME}_ALL_INCLUDE_DIRS} )
+			list(APPEND includeDirs ${${PROJECT_NAME}_INCLUDE_DIRS} )
 		endif()
 
-		FOREACH(currentName ${${PROJECT_NAME}_RECURSIVE_INCLUDES})
+		FOREACH(currentName ${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS})
 			if(EXISTS ${currentName})
 				# if exists, it is a directory, like c:/github/project/library/libabcd
 				list(APPEND includeDirs ${currentName})
@@ -119,7 +111,7 @@ MACRO(create_project mode defines includes links)
 				# make the project completely public if it does not contain a .pri.h
 				if( "${${currentName}_PRIVATE_INCLUDE_FILES}" STREQUAL "")
 					#message("${currentName} has no file, ${${currentName}_ALL_INCLUDE_DIRS}")
-					list(APPEND includeDirs ${${currentName}_ALL_INCLUDE_DIRS} )
+					list(APPEND includeDirs ${${currentName}_INCLUDE_DIRS} )
 				else()
 				endif()
 				#message("${currentName} has : ${${currentName}_ALL_INCLUDE_DIRS} ")
@@ -132,7 +124,10 @@ MACRO(create_project mode defines includes links)
 			endif()
 		ENDFOREACH(currentName ${includes})
 		#list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${includeDirs})
-		list(APPEND includeDirs ${CMAKE_CURRENT_SOURCE_DIR})
+		list(APPEND includeDirs ${${PROJECT_NAME}_SOURCE_DIR})
+		unset(${PROJECT_NAME}_RECURSIVE_INCLUDE_DIRS CACHE)
+		set(${PROJECT_NAME}_RECURSIVE_INCLUDE_DIRS "${includeDirs}" CACHE STRING "")
+
 		# Add links
 		GeneratePrecompiledHeader()
 
@@ -155,8 +150,8 @@ MACRO(create_project mode defines includes links)
 		add_definitions("-D${PROJECT_NAME}_PROJECT_ID=${PROJECT_COUNT}")
 		add_definitions("-DCURRENT_PROJECT_ID=${PROJECT_COUNT}")
 		add_definitions("-D${${PROJECT_NAME}_BUILD_TYPE}")
+
 		if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
-			#message("its: ${PROJECT_NAME} with ${${PROJECT_NAME}_HEADERS}")
 			add_library (${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SRC} ${${PROJECT_NAME}_HEADERS} ${${PROJECT_NAME}_MISC} ${${PROJECT_NAME}_RESOURCES})
 			add_definitions("-DCOMPILING_STATIC")
 		elseif(${${PROJECT_NAME}_MODE} STREQUAL "DYNAMIC" OR ${${PROJECT_NAME}_MODE} STREQUAL "SHARED" )
@@ -220,7 +215,7 @@ MACRO(create_project mode defines includes links)
 			list(REMOVE_DUPLICATES includeDirs)
 		endif()
 		#message("${PROJECT_NAME}_ALL_INCLUDE_DIRS: ${${PROJECT_NAME}_ALL_INCLUDE_DIRS}")
-		#message("${PROJECT_NAME}_includeDirs: ${includeDirs}")
+		
 		target_include_directories(${PROJECT_NAME} PUBLIC "${includeDirs}" )
 
 		#----- Handle Links -----
@@ -269,7 +264,7 @@ MACRO(create_project mode defines includes links)
 		#if( MSVC )
 			# TODO: OPTIMIZE THIS
 			string(REPLACE "/" ";" sourceDirList "${CMAKE_SOURCE_DIR}")
-			string(REPLACE "/" ";" currSourceDirList "${CMAKE_CURRENT_SOURCE_DIR}")
+			string(REPLACE "/" ";" currSourceDirList "${${PROJECT_NAME}_SOURCE_DIR}")
 			list(REVERSE currSourceDirList)
 			list(REMOVE_AT currSourceDirList 0)
 			list(REVERSE currSourceDirList)
@@ -344,7 +339,7 @@ MACRO(create_project mode defines includes links)
 			include( Optional/AddFlexBisonCustomTarget )
 		endif()
 
-		#set(arg1 "${CMAKE_CURRENT_SOURCE_DIR}")
+		#set(arg1 "${${PROJECT_NAME}_SOURCE_DIR}")
 		if(MSVC)
 			if(NOT projectExtension STREQUAL "")
 				string(REPLACE "/" "\\" arg1 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}*${projectExtension}")
@@ -384,7 +379,7 @@ MACRO(create_project mode defines includes links)
 			#	TARGET ${PROJECT_NAME}_UPDATE_RESOURCE
 			#	PRE_BUILD
 			#	COMMAND ${CMAKE_COMMAND}
-			#	-DSrcDir=${CMAKE_CURRENT_SOURCE_DIR}
+			#	-DSrcDir=${${PROJECT_NAME}_SOURCE_DIR}
 			#	-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
 			#	-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
 			#	COMMENT "Copying resource files to the binary output directory")
