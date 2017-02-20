@@ -35,15 +35,16 @@ MACRO(create_build global_define )
 	]]#
 
 	#find all cmakelists files
-	file(GLOB_RECURSE normalPriorityProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
-	list(REMOVE_ITEM normalPriorityProjects ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
+	file(GLOB_RECURSE normalPriorityProjectsRaw ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
+	list(REMOVE_ITEM normalPriorityProjectsRaw ${CMAKE_SOURCE_DIR}/CMakeLists.txt)
 
 	#Cache root directories of all projects
 	unset(CMAKE_ALL_PROJECT_DIRS CACHE)
 	set(CMAKE_ALL_PROJECT_DIRS "")
-	FOREACH(curFile ${normalPriorityProjects})
+	FOREACH(curFile ${normalPriorityProjectsRaw})
 		get_filename_component(fileDir ${curFile} DIRECTORY)
 		list(APPEND CMAKE_ALL_PROJECT_DIRS ${fileDir})
+		list(APPEND normalPriorityProjects ${fileDir}/CMakeLists.txt)
 	ENDFOREACH()
 	#set(CMAKE_ALL_PROJECT_DIRS "${CMAKE_ALL_PROJECT_DIRS}" CACHE STRING "")
 
@@ -248,7 +249,8 @@ MACRO(create_build global_define )
 		-DSrcDirs="${PROJECT_DIRS}"
 		-DDestDir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../
 		-P ${CMAKE_MODULE_PATH}/Core/CopyResource.cmake
-		COMMENT "Copying resource files to the binary output directory")
+		#COMMENT "Copying resource files to the binary output directory"
+		)
 
 	SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 	if( MSVC )
@@ -269,7 +271,7 @@ MACRO(IncludeProjects projects)
 		string(LENGTH ${CMAKE_SOURCE_DIR} firDirStrSize)
 		string(SUBSTRING ${fileDir} ${firDirStrSize} -1 protoFileDirSubStr)
 		set(${PROJECT_NAME}_SOURCE_DIR "${fileDir}")
-		set(${PROJECT_NAME}_BINARY_DIR "${CMAKE_BINARY_DIR}${protoFileDirSubStr}")
+		set(${PROJECT_NAME}_BINARY_DIR "${CMAKE_BINARY_DIR}/${protoFileDirSubStr}")
 
 		# Most important step!
 		if(NOT CMAKE_BUILD_FLAG STREQUAL "LITE")
