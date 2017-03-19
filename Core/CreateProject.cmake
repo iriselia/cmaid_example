@@ -60,6 +60,7 @@ MACRO(create_project mode defines includes links)
 
 	#----- The follow code will only be executed if build project is being run a second time -----
 	if( ${PROJECT_NAME}_INITIALIZED )
+
 		#message("Building: ${PROJECT_NAME}")
 		#----- Add Preprocessor Definitions -----
 		foreach(currMacro ${defines})
@@ -92,12 +93,15 @@ MACRO(create_project mode defines includes links)
 		endif()
 
 		FOREACH(currentName ${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS})
-			if(EXISTS ${currentName})
-				# if exists, it is a directory, like c:/github/project/library/libabcd
-				list(APPEND includeDirs ${currentName})
-			elseif(EXISTS ${CMAKE_SOURCE_DIR}/${currentName})
-				# or if it exists in the cmake source dir, it is a relative path, e.g. /library/libabcd
-				list(APPEND includeDirs ${CMAKE_SOURCE_DIR}/${currentName})
+			# if exists, it is either a full path or a rel path, like c:/github/project/library/libabcd
+			if(IS_DIRECTORY ${currentName})
+				if(NOT IS_ABSOLUTE ${currentName})
+					# or if it is a rel path to a folder within the cmake source dir,
+					# e.g. /3rdparty/libabcd
+					list(APPEND includeDirs ${CMAKE_SOURCE_DIR}/${currentName})
+				else()
+					list(APPEND includeDirs ${currentName})
+				endif()
 			else()
 				# if doesn't exist, it is a target, we retrieve the include dirs by appending _INCLUDE_DIRS to its name
 				list(APPEND includeDirs ${${currentName}_PUBLIC_INCLUDE_DIRS})
