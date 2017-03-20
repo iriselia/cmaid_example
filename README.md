@@ -14,6 +14,6 @@ Sample program
 ---------------
 https://github.com/fpark12/PurifySampleProject
 
-Personal project that uses Purify extensively
+Personal Project with Extensive Use of Purify
 ---------------
 https://github.com/fpark12/ServerTest
