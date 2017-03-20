@@ -18,4 +18,6 @@ Personal Projects
 ---------------
 A WIP MMO server with extensive use of Purify:
 
+Check out many of the advanced features of Purify here:
+
 https://github.com/fpark12/ServerTest
