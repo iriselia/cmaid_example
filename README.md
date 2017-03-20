@@ -10,6 +10,10 @@ This is a lazy, cross-platform build manager for C++ written in [CMake](http://w
 - Generates symbol export/import macros for dynamic library projects.
 - Improves build speed by managing pre-compiled headers and forced-included headers based on config files
 
-Sameple Program
+Sample program
 ---------------
 https://github.com/fpark12/PurifySampleProject
+
+Personal project that uses Purify extensively
+---------------
+https://github.com/fpark12/ServerTest
