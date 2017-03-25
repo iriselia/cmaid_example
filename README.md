@@ -1,6 +1,6 @@
 # Purify
 
-This is a lazy, cross-platform build manager for C++ written in [CMake](http://www.cmake.org/), Batch scripts, and Shell scripts and licensed under BSD 3-clause License. It was designed as a to enable fast iteration and allow users to create and maintain cross-platform C++ projects with ease.
+This is a lazy, cross-platform build manager for C++ written in [CMake](http://www.cmake.org/), Batch scripts, and Shell scripts and licensed under BSD 2-clause License. It was designed as a to enable fast iteration and allow users to create and maintain cross-platform C++ projects with ease.
 
 # Features
 - Off-the-shelf solution for lazy management of cross-platform C++ builds.
