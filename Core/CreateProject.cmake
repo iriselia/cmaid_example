@@ -44,9 +44,9 @@ MACRO(create_project mode defines includes links)
 	unset(${PROJECT_NAME}_MODE CACHE)
 	unset(${PROJECT_NAME}_BUILD_TYPE CACHE)
 	unset(${PROJECT_NAME}_ID CACHE)
-	set(${PROJECT_NAME}_DEFINES "${defines}" CACHE STRING "")
+	set(${PROJECT_NAME}_DEFINES "${${defines}}" CACHE STRING "")
 	set(${PROJECT_NAME}_MODE "${mode_capped}" CACHE STRING "")
-	set(${PROJECT_NAME}_INCLUDES "${includes}" CACHE STRING "")
+	set(${PROJECT_NAME}_INCLUDES "${${includes}}" CACHE STRING "")
 	set(${PROJECT_NAME}_BUILD_TYPE "${PROJECT_NAME}_IS_${mode_capped}" CACHE STRING "")
 	set(${PROJECT_NAME}_ID "${PROJECT_COUNT}" CACHE STRING "")
 
@@ -225,7 +225,7 @@ MACRO(create_project mode defines includes links)
 		#----- Handle Links -----
 		#set(${PROJECT_NAME}_ALL_LINK_LIBS ${links} CACHE STRING "")
 		#link_libraries(${links})
-		search_and_link_libraries("${links}")
+		search_and_link_libraries("${${links}}")
 
 		#----- compile flags -----
 		get_target_property(FLAGS ${PROJECT_NAME} COMPILE_FLAGS)
