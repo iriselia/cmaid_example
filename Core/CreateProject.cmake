@@ -63,7 +63,7 @@ MACRO(create_project mode defines includes links)
 
 		#message("Building: ${PROJECT_NAME}")
 		#----- Add Preprocessor Definitions -----
-		foreach(currMacro ${defines})
+		foreach(currMacro ${${defines}})
 			add_definitions("-D${currMacro}")
 		endforeach()
 		#----- Add Project Name -----
