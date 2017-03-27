@@ -315,7 +315,7 @@ MACRO(AddSubdirectories projects)
 
 			if( ("${${PROJECT_NAME}_MODE}" STREQUAL "CONSOLE") OR ("${${PROJECT_NAME}_MODE}" STREQUAL "WIN32") )
 			else()
-				CONFIGURE_FILE(${CMAKE_MODULE_PATH}/Core/SymbolExportAPITemplate.template ${${PROJECT_NAME}_BINARY_DIR}/${PROJECT_NAME}_API.generated.h @ONLY)
+				CONFIGURE_FILE(${CMAKE_MODULE_PATH}/Detail/SymbolExportAPITemplate.template ${${PROJECT_NAME}_BINARY_DIR}/${PROJECT_NAME}_API.generated.h @ONLY)
 				set(${PROJECT_NAMES}_EXPORT_API "${PROJECT_NAME}_ExportAPI.generated.h" CACHE STRING "")
 			endif()
 
