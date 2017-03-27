@@ -44,7 +44,7 @@ MACRO( CreateVSProjectSettings )
 		# Configure the template file
 		SET(USER_FILE ${PROJECT_NAME}.vcxproj.user)
 		SET(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
-		CONFIGURE_FILE(${CMAKE_MODULE_PATH}/Core/Detail/UserTemplate.template ${USER_FILE} @ONLY)
+		CONFIGURE_FILE(${CMAKE_MODULE_PATH}/Core/UserTemplate.template ${USER_FILE} @ONLY)
 	endif()
 
 	#TODO: REMOVE
