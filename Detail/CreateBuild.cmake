@@ -14,7 +14,7 @@ MACRO(create_build global_define )
 	unset(FIRST_BUILD CACHE)
 	set(FIRST_BUILD ON CACHE STRING "")
 
-	FOREACH(currDefine ${GLOBAL_DEFINE})
+	FOREACH(currDefine ${global_define})
 		string(SUBSTRING ${currDefine} 0 1 firstLetter)
 		if(firstLetter STREQUAL "/")
 			add_definitions(${currDefine})

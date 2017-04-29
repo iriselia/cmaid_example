@@ -234,6 +234,9 @@ MACRO(create_project mode defines includes links)
 		endif()
 		set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${FLAGS} ${outCompileFlags}")
 
+		# Enable Unicode
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UMBCS /D_UNICODE /DUNICODE")
+		
 		ProcessorCount(ProcCount)
 
 		if( MSVC )
