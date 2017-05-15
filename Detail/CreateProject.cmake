@@ -268,8 +268,8 @@ MACRO(create_project mode defines includes links)
 
 		# Store include dirs as macro
 		if( MSVC )		
-			string(REPLACE ";" "\\n" includeDirs "${includeDirs}\\n" )
-			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_INCLUDE_DIRS=\\\"${includeDirs}\\\"")
+			string(REPLACE ";" "\\\",\\\"" includeDirs "${includeDirs}" )
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_INCLUDE_DIRS={\\\"${includeDirs}\\\"}")
 		endif()
 
 
@@ -280,15 +280,15 @@ MACRO(create_project mode defines includes links)
 
 		# Store link libs as macro
 		if(MSVC)
-			string(REPLACE ";" "\\n" linkLibs_Debug "${linkLibs_Debug}\\n" )
-			string(REPLACE ";" "\\n" linkLibs_Release "${linkLibs_Release}\\n" )
-			string(REPLACE ";" "\\n" linkLibs_MinSizeRel "${linkLibs_MinSizeRel}\\n" )
-			string(REPLACE ";" "\\n" linkLibs_RelWithDebInfo "${linkLibs_RelWithDebInfo}\\n" )
+			string(REPLACE ";" "\\\",\\\"" linkLibs_Debug "${linkLibs_Debug}" )
+			string(REPLACE ";" "\\\",\\\"" linkLibs_Release "${linkLibs_Release}" )
+			string(REPLACE ";" "\\\",\\\"" linkLibs_MinSizeRel "${linkLibs_MinSizeRel}" )
+			string(REPLACE ";" "\\\",\\\"" linkLibs_RelWithDebInfo "${linkLibs_RelWithDebInfo}" )
 			#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_LINK_LIBS=\"${linkLibs_Debug}\"")
-			set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_LINK_LIBS=\\\"${linkLibs_Debug}\\\"" )
-			set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_LINK_LIBS=\\\"${linkLibs_Release}\\\"" )
-			set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /D_LINK_LIBS=\\\"${linkLibs_MinSizeRel}\\\"" )
-			set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /D_LINK_LIBS=\\\"${linkLibs_RelWithDebInfo}\\\"" )
+			set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_LINK_LIBS={\\\"${linkLibs_Debug}\\\"}" )
+			set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_LINK_LIBS={\\\"${linkLibs_Release}\\\"}" )
+			set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /D_LINK_LIBS={\\\"${linkLibs_MinSizeRel}\\\"}" )
+			set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /D_LINK_LIBS={\\\"${linkLibs_RelWithDebInfo}\\\"}" )
 		endif()
 		
 		ProcessorCount(ProcCount)
