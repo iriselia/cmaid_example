@@ -41,19 +41,23 @@ MACRO(create_project mode defines includes links)
 	#----- Cache Call Params -----
 	unset(${PROJECT_NAME}_DEFINES CACHE)
 	unset(${PROJECT_NAME}_INCLUDES CACHE)
+	unset(${PROJECT_NAME}_LINKS CACHE)
 	unset(${PROJECT_NAME}_MODE CACHE)
 	unset(${PROJECT_NAME}_BUILD_TYPE CACHE)
 	unset(${PROJECT_NAME}_ID CACHE)
 	set(${PROJECT_NAME}_DEFINES "${${defines}}" CACHE STRING "")
-	set(${PROJECT_NAME}_MODE "${mode_capped}" CACHE STRING "")
 	set(${PROJECT_NAME}_INCLUDES "${${includes}}" CACHE STRING "")
+	set(${PROJECT_NAME}_LINKS "${${links}}" CACHE STRING "")
+	set(${PROJECT_NAME}_MODE "${mode_capped}" CACHE STRING "")
 	set(${PROJECT_NAME}_BUILD_TYPE "${PROJECT_NAME}_IS_${mode_capped}" CACHE STRING "")
 	set(${PROJECT_NAME}_ID "${PROJECT_COUNT}" CACHE STRING "")
 
 	GetIncludeProjectsRecursive(${PROJECT_NAME} ${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS)
+	GetLinkLibsRecursive(${PROJECT_NAME} ${PROJECT_NAME}_RECURSIVE_LINK_LIBS)
 	#unset(${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS CACHE)
 	#set(${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS "${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS}" CACHE STRING "")
 	set(${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS "${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS}")
+	set(${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS "${${PROJECT_NAME}_RECURSIVE_LINK_LIBS}")
 		#----- SCAN SOURCE -----
 		#----- Scan Shader Files -----
 
@@ -79,6 +83,7 @@ MACRO(create_project mode defines includes links)
 		#message("New includes: ${${PROJECT_NAME}_RECURSIVE_INCLUDE_PROJS}")
 		# Process include list, an element could be a list of dirs or a target name
 		set(includeDirs "")
+		set(linkLibs "")
 		set(includeProjs "")
 		#message("${PROJECT_NAME} includes ${${PROJECT_NAME}_INCLUDES}")
 		#message("${PROJECT_NAME} includes ${includes}")
@@ -127,6 +132,25 @@ MACRO(create_project mode defines includes links)
 				list(APPEND includeProjs ${currentName})
 			endif()
 		ENDFOREACH(currentName ${includes})
+
+		FOREACH(currentName ${${PROJECT_NAME}_RECURSIVE_LINK_LIBS})
+			if(EXISTS ${currentName})
+				list(APPEND linkLibs ${currentName})
+			elseif(TARGET ${currentName})
+				foreach(current_build_config ${CMAKE_CONFIGURATION_TYPES})
+					GetTargetOutputExtension(${currentName} ${currentName}_output_extension)
+					if (${current_build_config} STREQUAL "Debug")
+						list(APPEND linkLibs_${current_build_config} "${CMAKE_BINARY_DIR}/${current_build_config}/${currentName}${CMAKE_DEBUG_POSTFIX}${${currentName}_output_extension}")
+					else()
+						list(APPEND linkLibs_${current_build_config} "${CMAKE_BINARY_DIR}/${current_build_config}/${currentName}${${currentName}_output_extension}")
+					endif()
+				endforeach()
+
+				# if doesn't exist, it is a target, we retrieve the include dirs by appending _INCLUDE_DIRS to its name
+				#get_property(${currentName}_output TARGET ${currentName} PROPERTY LOCATION)
+			endif()
+		ENDFOREACH()
+
 		#list(APPEND ${PROJECT_NAME}_ALL_INCLUDE_DIRS ${includeDirs})
 		list(APPEND includeDirs ${${PROJECT_NAME}_SOURCE_DIR})
 		unset(${PROJECT_NAME}_RECURSIVE_INCLUDE_DIRS CACHE)
@@ -234,9 +258,37 @@ MACRO(create_project mode defines includes links)
 		endif()
 		set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${FLAGS} ${outCompileFlags}")
 
-		# Enable Unicode
+		# Enable Unicode, disable min max macros
 		if( MSVC )
-			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UMBCS /D_UNICODE /DUNICODE")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UMBCS /D_UNICODE /DUNICODE /DNOMINMAX")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_ROOT_DIR=L\\\"${CMAKE_SOURCE_DIR}\\\"")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_BUILD_DIR=L\\\"${CMAKE_BINARY_DIR}\\\"")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_BINARIES_DIR=L\\\"${CMAKE_SOURCE_DIR}/Binaries\\\"")
+		endif()
+
+		# Store include dirs as macro
+		if( MSVC )		
+			string(REPLACE ";" "\\n" includeDirs "${includeDirs}\\n" )
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_INCLUDE_DIRS=\\\"${includeDirs}\\\"")
+		endif()
+
+
+
+		foreach(current_build_config ${CMAKE_CONFIGURATION_TYPES})
+			#message("${PROJECT_NAME}: linkLibs_${current_build_config} has : ${linkLibs_${current_build_config}} ")
+		endforeach()
+
+		# Store link libs as macro
+		if(MSVC)
+			string(REPLACE ";" "\\n" linkLibs_Debug "${linkLibs_Debug}\\n" )
+			string(REPLACE ";" "\\n" linkLibs_Release "${linkLibs_Release}\\n" )
+			string(REPLACE ";" "\\n" linkLibs_MinSizeRel "${linkLibs_MinSizeRel}\\n" )
+			string(REPLACE ";" "\\n" linkLibs_RelWithDebInfo "${linkLibs_RelWithDebInfo}\\n" )
+			#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_LINK_LIBS=\"${linkLibs_Debug}\"")
+			set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_LINK_LIBS=\\\"${linkLibs_Debug}\\\"" )
+			set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_LINK_LIBS=\\\"${linkLibs_Release}\\\"" )
+			set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /D_LINK_LIBS=\\\"${linkLibs_MinSizeRel}\\\"" )
+			set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /D_LINK_LIBS=\\\"${linkLibs_RelWithDebInfo}\\\"" )
 		endif()
 		
 		ProcessorCount(ProcCount)
@@ -246,13 +298,13 @@ MACRO(create_project mode defines includes links)
 				set(CompilerFlags
 					CMAKE_CXX_FLAGS
 					CMAKE_CXX_FLAGS_DEBUG
-					CMAKE_CXX_FLAGS_MINSIZEREL
 					CMAKE_CXX_FLAGS_RELEASE
+					CMAKE_CXX_FLAGS_MINSIZEREL
 					CMAKE_CXX_FLAGS_RELWITHDEBINFO
 					CMAKE_C_FLAGS
 					CMAKE_C_FLAGS_DEBUG
-					CMAKE_C_FLAGS_MINSIZEREL
 					CMAKE_C_FLAGS_RELEASE
+					CMAKE_C_FLAGS_MINSIZEREL
 					CMAKE_C_FLAGS_RELWITHDEBINFO
 				)
 
