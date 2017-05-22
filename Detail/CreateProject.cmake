@@ -71,8 +71,9 @@ MACRO(create_project mode defines includes links)
 			add_definitions("-D${currMacro}")
 		endforeach()
 		#----- Add Project Name -----
-		add_definitions("-DPROJECT_NAME=\"${PROJECT_NAME}\"")
-		add_definitions("-DPROJECT_ID=${${PROJECT_NAME}_ID}")
+		add_definitions("-D_PROJECT_NAME=\"${PROJECT_NAME}\"")
+		add_definitions("-D_PROJECT_ID=${${PROJECT_NAME}_ID}")
+
 
 		ScanSourceFiles() #----- Utils.cmake
 
@@ -260,10 +261,58 @@ MACRO(create_project mode defines includes links)
 
 		# Enable Unicode, disable min max macros
 		if( MSVC )
-			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UMBCS /D_UNICODE /DUNICODE /DNOMINMAX")
-			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_ROOT_DIR=L\\\"${CMAKE_SOURCE_DIR}\\\"")
-			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_BUILD_DIR=L\\\"${CMAKE_BINARY_DIR}\\\"")
-			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_BINARIES_DIR=L\\\"${CMAKE_SOURCE_DIR}/Binaries\\\"")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /FC /UMBCS /D_UNICODE /DUNICODE /DNOMINMAX")
+		endif()
+
+		# Store compiler flags as macro
+		if(MSVC)
+			string(REPLACE " " "\\\",\\\"" compilerFlags_Debug "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}" )
+			string(REPLACE " " "\\\",\\\"" compilerFlags_Release "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}" )
+			string(REPLACE " " "\\\",\\\"" compilerFlags_MinSizeRel "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_MINSIZEREL}" )
+			string(REPLACE " " "\\\",\\\"" compilerFlags_RelWithDebInfo "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" )
+			set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_COMPILER_FLAGS={\\\"${compilerFlags_Debug}\\\"}" )
+			set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_COMPILER_FLAGS={\\\"${compilerFlags_Release}\\\"}" )
+			set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /D_COMPILER_FLAGS={\\\"${compilerFlags_MinSizeRel}\\\"}" )
+			set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /D_COMPILER_FLAGS={\\\"${compilerFlags_RelWithDebInfo}\\\"}" )
+		endif()
+
+		# Store linker flags as macro
+		if(MSVC)
+			if(${${PROJECT_NAME}_MODE} STREQUAL "STATIC")
+				string(REPLACE " " "\\\",\\\"" linkerFlags_Debug "${CMAKE_STATIC_LINKER_FLAGS}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_Release "${CMAKE_STATIC_LINKER_FLAGS}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_MinSizeRel "${CMAKE_STATIC_LINKER_FLAGS}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_RelWithDebInfo "${CMAKE_STATIC_LINKER_FLAGS}" )
+			elseif(${${PROJECT_NAME}_MODE} STREQUAL "DYNAMIC" OR ${${PROJECT_NAME}_MODE} STREQUAL "SHARED" OR ${${PROJECT_NAME}_MODE} STREQUAL "MODULE" )
+
+				string(REPLACE " " "\\\",\\\"" linkerFlags_Debug "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS_DEBUG}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_Release "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_MinSizeRel "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_RelWithDebInfo "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO}" )
+
+			elseif(${${PROJECT_NAME}_MODE} STREQUAL "CONSOLE" OR ${${PROJECT_NAME}_MODE} STREQUAL "WIN32")
+				string(REPLACE " " "\\\",\\\"" linkerFlags_Debug "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_DEBUG}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_Release "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_RELEASE}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_MinSizeRel "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}" )
+				string(REPLACE " " "\\\",\\\"" linkerFlags_RelWithDebInfo "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}" )
+
+			endif()
+
+			set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_LINKER_FLAGS={\\\"${linkerFlags_Debug}\\\"}" )
+			set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /D_LINKER_FLAGS={\\\"${linkerFlags_Release}\\\"}" )
+			set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /D_LINKER_FLAGS={\\\"${linkerFlags_MinSizeRel}\\\"}" )
+			set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /D_LINKER_FLAGS={\\\"${linkerFlags_RelWithDebInfo}\\\"}" )
+
+		endif()
+
+		# Store root dir, build dir, and bin dir as macros
+		if( MSVC )
+			file(RELATIVE_PATH rel_path ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_ROOT_DIR=\\\"${CMAKE_SOURCE_DIR}\\\"")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_BUILD_DIR=\\\"${CMAKE_BINARY_DIR}\\\"")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_TARGET_PATH=\\\"${rel_path}\\\"")
+			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_BINARIES_DIR=\\\"${CMAKE_SOURCE_DIR}/Binaries\\\"")
 		endif()
 
 		# Store include dirs as macro
@@ -272,10 +321,10 @@ MACRO(create_project mode defines includes links)
 			SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_INCLUDE_DIRS={\\\"${includeDirs}\\\"}")
 		endif()
 
-
+		
 
 		foreach(current_build_config ${CMAKE_CONFIGURATION_TYPES})
-			#message("${PROJECT_NAME}: linkLibs_${current_build_config} has : ${linkLibs_${current_build_config}} ")
+			#message("${PROJECT_NAME}: compilerFlags_${current_build_config} has : ${compilerFlags_${current_build_config}} ")
 		endforeach()
 
 		# Store link libs as macro
