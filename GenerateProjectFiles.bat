@@ -57,7 +57,7 @@ Attrib +h +s +r x64
 Attrib +h +s +r Build
 pushd .\Build
 rem ## build twice here because first build generates cache
-"%CMakePath%" -G %CMakeArg% .\ -DCMAKE_BUILD_FLAG=%CMAKE_BUILD_FLAG% || goto Error_FailedToGenerateSolution
+"%CMakePath%" -G %CMakeArg% .. -DCMAKE_BUILD_FLAG=%CMAKE_BUILD_FLAG% || goto Error_FailedToGenerateSolution
 popd
 goto GenerateSolutionIcon
 
@@ -65,7 +65,7 @@ goto GenerateSolutionIcon
 2>NUL mkdir x64
 Attrib +h +s +r x64
 pushd .\Build
-"%CMakePath%" -G %CMakeArg% .\ -DCMAKE_BUILD_FLAG=%CMAKE_BUILD_FLAG% || goto Error_FailedToGenerateSolution
+"%CMakePath%" -G %CMakeArg% .. -DCMAKE_BUILD_FLAG=%CMAKE_BUILD_FLAG% || goto Error_FailedToGenerateSolution
 popd
 goto GenerateSolutionIcon
 
