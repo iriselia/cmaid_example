@@ -146,7 +146,6 @@ MACRO(create_build global_define )
 			#include current include dirs and cache the content
 			set(${PROJECT_NAME}_PRIVATE_INCLUDE_DIRS "${CURRENT_INCLUDE_DIRS}" CACHE STRING "")
 			set(${PROJECT_NAME}_PRIVATE_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
-			message("${PROJECT_NAME}_PRIVATE_INCLUDE_FILES ${MY_HEADERS}")
 		endif()
 		
 		#----- Protected Headers -----
