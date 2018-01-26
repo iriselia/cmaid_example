@@ -357,16 +357,14 @@ MACRO(create_project mode defines includes links)
 					COMMENT "Copying resource files to the binary output directory...")
 			endif()
 		else()
-			if(NOT projectExtension STREQUAL "")
-				set(arg1 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}*${projectExtension}")
-				set(arg2 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../")
+				set(arg1 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}${projectExtension}")
+				set(arg2 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../${PROJECT_NAME}${projectExtension}")
 				add_custom_command(
 					TARGET ${PROJECT_NAME}
 					POST_BUILD
-					COMMAND "tar"
-					ARGS  "-cf" "-" "${arg1}" "|" "tar" "-C${arg2}" "-xf" "-"
+					COMMAND "cp"
+					ARGS  "${arg1}" "${arg2}"
 					COMMENT "Copying resource files to the binary output directory...")
-			endif()
 			##message("FIX COPY")
 		endif()
 
