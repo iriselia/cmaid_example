@@ -463,6 +463,12 @@ MACRO(create_project mode defines includes links)
 					COMMENT "Copying resource files to the binary output directory...")
 			endif()
 		else()
+				add_custom_command(
+					TARGET ${PROJECT_NAME}
+					PRE_BUILD
+					COMMAND "mkdir"
+					ARGS  "-p" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
 				set(arg1 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PROJECT_NAME}${projectExtension}")
 				set(arg2 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../${PROJECT_NAME}${projectExtension}")
 				add_custom_command(

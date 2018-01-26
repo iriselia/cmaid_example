@@ -241,6 +241,11 @@ MACRO(create_build global_define )
 		UPDATE_RESOURCE
 		DEPENDS always_rebuild
 	)
+
+	add_custom_command(
+    	OUTPUT always_rebuild
+    	COMMAND cmake -E echo
+    )
 	
 	add_custom_command(
 		TARGET UPDATE_RESOURCE
