@@ -14,7 +14,7 @@ MACRO(create_build global_define )
 	unset(FIRST_BUILD CACHE)
 	set(FIRST_BUILD ON CACHE STRING "")
 
-	FOREACH(currDefine ${GLOBAL_DEFINE})
+	FOREACH(currDefine ${global_define})
 		string(SUBSTRING ${currDefine} 0 1 firstLetter)
 		if(firstLetter STREQUAL "/")
 			add_definitions(${currDefine})
@@ -110,6 +110,8 @@ MACRO(create_build global_define )
 		
 		#----- Private pre-compiled Header -----
 		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.pch.h)
+		unset(${PROJECT_NAME}_PRECOMPILED_INCLUDE_DIRS CACHE)
+		unset(${PROJECT_NAME}_PRECOMPILED_INCLUDE_FILES CACHE)
 		if( NOT MY_HEADERS STREQUAL "" )
 			create_source_group("" "${fileDir}/" ${MY_HEADERS})
 			#remove duplicates and parse directories
@@ -122,14 +124,14 @@ MACRO(create_build global_define )
 			endforeach()
 			list(REMOVE_DUPLICATES CURRENT_INCLUDE_DIRS)
 			#include current include dirs and cache the content
-			unset(${PROJECT_NAME}_PRECOMPILED_INCLUDE_DIRS CACHE)
 			set(${PROJECT_NAME}_PRECOMPILED_INCLUDE_DIRS "${CURRENT_INCLUDE_DIRS}" CACHE STRING "")
-			unset(${PROJECT_NAME}_PRECOMPILED_INCLUDE_FILES CACHE)
 			set(${PROJECT_NAME}_PRECOMPILED_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
 		endif()
 
 		#----- Private Headers -----
 		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.pri.h ${fileDir}/*.pri.hpp ${fileDir}/*.pri.inl)
+		unset(${PROJECT_NAME}_PRIVATE_INCLUDE_DIRS CACHE)
+		unset(${PROJECT_NAME}_PRIVATE_INCLUDE_FILES CACHE)
 		if( NOT MY_HEADERS STREQUAL "" )
 			create_source_group("" "${fileDir}/" ${MY_HEADERS})
 			#remove duplicates and parse directories
@@ -142,14 +144,14 @@ MACRO(create_build global_define )
 			endforeach()
 			list(REMOVE_DUPLICATES CURRENT_INCLUDE_DIRS)
 			#include current include dirs and cache the content
-			unset(${PROJECT_NAME}_PRIVATE_INCLUDE_DIRS CACHE)
 			set(${PROJECT_NAME}_PRIVATE_INCLUDE_DIRS "${CURRENT_INCLUDE_DIRS}" CACHE STRING "")
-			unset(${PROJECT_NAME}_PRIVATE_INCLUDE_FILES CACHE)
 			set(${PROJECT_NAME}_PRIVATE_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
 		endif()
 		
 		#----- Protected Headers -----
 		file(GLOB_RECURSE MY_HEADERS ${fileDir}/*.pro.h ${fileDir}/*.pro.hpp ${fileDir}/*.pro.inl)
+		unset(${PROJECT_NAME}_PROTECTED_INCLUDE_DIRS CACHE)
+		unset(${PROJECT_NAME}_PROTECTED_INCLUDE_FILES CACHE)
 		if( NOT MY_HEADERS STREQUAL "" )
 			create_source_group("" "${fileDir}/" ${MY_HEADERS})
 			#remove duplicates and parse directories
@@ -162,9 +164,7 @@ MACRO(create_build global_define )
 			endforeach()
 			list(REMOVE_DUPLICATES CURRENT_INCLUDE_DIRS)
 			#include current include dirs and cache the content
-			unset(${PROJECT_NAME}_PROTECTED_INCLUDE_DIRS CACHE)
 			set(${PROJECT_NAME}_PROTECTED_INCLUDE_DIRS "${CURRENT_INCLUDE_DIRS}" CACHE STRING "")
-			unset(${PROJECT_NAME}_PROTECTED_INCLUDE_FILES CACHE)
 			set(${PROJECT_NAME}_PROTECTED_INCLUDE_FILES "${MY_HEADERS}" CACHE STRING "")
 
 		endif()
