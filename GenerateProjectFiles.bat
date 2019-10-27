@@ -8,7 +8,7 @@ pushd .\Purify\BatchFiles
 call GetVSComnToolsPath 16
 popd
 if "%VsComnToolsPath%" == "" goto FindVS2017
-set CMakeArg="Visual Studio 16 2019 Win64"
+set CMakeArg="Visual Studio 16 2019"
 goto ReadyToBuild
 :FindVS2017
 pushd .\Purify\BatchFiles
