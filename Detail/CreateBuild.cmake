@@ -244,7 +244,7 @@ MACRO(create_build global_define )
 
 	add_custom_command(
     	OUTPUT always_rebuild
-    	COMMAND cmake -E echo
+    	COMMAND ${CMAKE_COMMAND} -E echo
     )
 	
 	add_custom_command(
