@@ -93,7 +93,8 @@ MACRO(create_build global_define )
 			foreach (_headerFile ${MY_HEADERS})
 				get_filename_component(_dir ${_headerFile} PATH)
 				FILE(RELATIVE_PATH newdir ${CMAKE_CURRENT_BINARY_DIR} ${_dir})
-				list (APPEND CURRENT_INCLUDE_DIRS ${_dir})
+				# disable recursive include
+				#list (APPEND CURRENT_INCLUDE_DIRS ${_dir})
 			endforeach()
 			list(REMOVE_DUPLICATES CURRENT_INCLUDE_DIRS)
 			#bad idea
@@ -244,7 +245,7 @@ MACRO(create_build global_define )
 
 	add_custom_command(
     	OUTPUT always_rebuild
-    	COMMAND cmake -E echo
+    	COMMAND ${CMAKE_COMMAND} -E echo
     )
 	
 	add_custom_command(
