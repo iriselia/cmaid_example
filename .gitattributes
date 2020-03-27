@@ -1,8 +1,6 @@
-# Auto detect text files and perform LF normalization
-* text=auto
-
-# Custom for Visual Studio
-*.cs     diff=csharp
+# Shell scripts
+.sh text eol=cr
+.command text eol=cr
 
 # Standard to msysgit
 *.doc	 diff=astextplain
